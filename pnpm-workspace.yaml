@@ -23,8 +23,10 @@ minimumReleaseAgeExclude:
   - babel-preset-expo@58.0.26
   - expo-file-system@58.0.14
   - expo@58.0.26
+  - expo-router@58.0.32
 allowBuilds:
   '@prisma/engines': true
   prisma: true
   '@swc/core': true
   '@scarf/scarf': false
+  '@parcel/watcher': true

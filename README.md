@@ -25,8 +25,30 @@ Requirements: Node.js 24, pnpm, Docker Desktop.
 pnpm install
 docker compose -f infra/docker-compose.yml up -d   # Postgres + Redis
 cp apps/api/.env.example apps/api/.env
-pnpm --filter api prisma:migrate
-pnpm dev                                           # API on :3000, Expo dev server
+pnpm --filter api prisma:generate
+pnpm --filter api prisma:deploy
+pnpm --filter api dev                              # API on http://localhost:3000, docs at /docs
 ```
 
 In development, OTP codes are printed to the API console instead of being sent by SMS.
+
+### Mobile app on your phone
+
+1. Install **Expo Go** on the phone; phone and computer on the same Wi-Fi.
+2. Find the computer's IP (`ipconfig`, e.g. `192.168.1.10`) and create `apps/mobile/.env`:
+   ```
+   EXPO_PUBLIC_API_URL=http://192.168.1.10:3000
+   ```
+3. Start Expo and scan the QR code with Expo Go:
+   ```sh
+   pnpm --filter mobile dev
+   ```
+
+On Windows, start it from a path with an upper-case drive letter (`C:\...`, the PowerShell default). Metro fails with "Unable to resolve c:\C:\..." when the shell's current directory starts with a lower-case `c:`.
+
+### Tests
+
+```sh
+pnpm test                          # unit tests: shared, api, mobile
+pnpm --filter api test:int         # API integration tests (needs Postgres + Redis)
+```
