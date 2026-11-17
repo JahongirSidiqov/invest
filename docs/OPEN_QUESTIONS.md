@@ -4,17 +4,17 @@ Business facts the code must not invent. Each item names who decides and where t
 
 ## Placeholders from the brief
 
-| Placeholder | Status | Used in |
-|---|---|---|
-| [APP_NAME] | open | README, mobile app name, welcome screen |
-| [PREMIUM_PRICE_MONTH], [PREMIUM_PRICE_YEAR] | open | billing (phase 6) |
-| [STT_PROVIDER] | open, decided by phase-0 test (≥ 90% accuracy) | voice (phase 2) |
-| [LLM_PROVIDER_AND_MODEL] | open; Azure AI Foundry is a candidate (anonymised text only) | voice, insights |
-| [SMS_PROVIDER] | open; dev uses a console adapter | auth |
-| [HOSTING_PROVIDER_UZ] | open | infra |
-| [PARTNER_LIST_AND_TERMS] | open | invest (phase 5) |
-| [LINK_TO_MOCKUPS] | resolved: docs/design/mockups.pdf (file still to be added to the repo) | all screens |
-| [LEGAL_REVIEW_NOTES] | open | see legal section below |
+| Placeholder                                 | Status                                                                 | Used in                                 |
+| ------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| [APP_NAME]                                  | open                                                                   | README, mobile app name, welcome screen |
+| [PREMIUM_PRICE_MONTH], [PREMIUM_PRICE_YEAR] | open                                                                   | billing (phase 6)                       |
+| [STT_PROVIDER]                              | open, decided by phase-0 test (≥ 90% accuracy)                         | voice (phase 2)                         |
+| [LLM_PROVIDER_AND_MODEL]                    | open; Azure AI Foundry is a candidate (anonymised text only)           | voice, insights                         |
+| [SMS_PROVIDER]                              | open; dev uses a console adapter                                       | auth                                    |
+| [HOSTING_PROVIDER_UZ]                       | open                                                                   | infra                                   |
+| [PARTNER_LIST_AND_TERMS]                    | open                                                                   | invest (phase 5)                        |
+| [LINK_TO_MOCKUPS]                           | resolved: docs/design/mockups.pdf (file still to be added to the repo) | all screens                             |
+| [LEGAL_REVIEW_NOTES]                        | open                                                                   | see legal section below                 |
 
 ## Product decisions
 

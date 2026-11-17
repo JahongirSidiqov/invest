@@ -25,3 +25,4 @@ apps/mobile/ios/
 Thumbs.db
 .idea/
 *.tmp
+!apps/api/.env.test

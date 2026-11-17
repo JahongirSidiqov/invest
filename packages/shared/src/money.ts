@@ -29,14 +29,14 @@ export function money(amountMinor: number, currency: Currency): Money {
  * without going through floating point.
  */
 export function parseMajor(input: string, currency: Currency): Money {
-  const normalised = input.trim().replace(/[\s ]/g, '').replace(',', '.');
+  // \s also matches the non-breaking space used as a thousands separator.
+  const normalised = input.trim().replace(/\s/g, '').replace(',', '.');
   const match = /^(-)?(\d+)(?:\.(\d{1,2}))?$/.exec(normalised);
   if (!match) {
     throw new RangeError(`Not a valid amount: "${input}"`);
   }
   const [, sign, whole = '0', fraction = ''] = match;
-  const minor =
-    Number(whole) * MINOR_PER_MAJOR[currency] + Number(fraction.padEnd(2, '0') || '0');
+  const minor = Number(whole) * MINOR_PER_MAJOR[currency] + Number(fraction.padEnd(2, '0') || '0');
   const amountMinor = sign ? -minor : minor;
   return money(amountMinor, currency);
 }

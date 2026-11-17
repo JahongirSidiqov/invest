@@ -8,14 +8,14 @@ Personal-finance mobile app for Uzbekistan: voice expense tracking (Uzbek, Russi
 
 ## Layout
 
-| Path | What |
-|---|---|
-| `apps/api` | NestJS API (modular monolith), Prisma, PostgreSQL 16, Redis |
-| `apps/mobile` | Expo / React Native app |
-| `packages/shared` | Zod schemas, money utilities, i18n keys |
-| `packages/api-client` | Types generated from the OpenAPI spec |
-| `packages/config` | Shared tsconfig and ESLint config |
-| `infra` | docker-compose for local development |
+| Path                  | What                                                        |
+| --------------------- | ----------------------------------------------------------- |
+| `apps/api`            | NestJS API (modular monolith), Prisma, PostgreSQL 16, Redis |
+| `apps/mobile`         | Expo / React Native app                                     |
+| `packages/shared`     | Zod schemas, money utilities, i18n keys                     |
+| `packages/api-client` | Types generated from the OpenAPI spec                       |
+| `packages/config`     | Shared tsconfig and ESLint config                           |
+| `infra`               | docker-compose for local development                        |
 
 ## Local development
 

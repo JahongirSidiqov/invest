@@ -31,16 +31,14 @@ export function maskUzPhone(e164: string): string {
   return `+998 ${national.slice(0, 2)} ••• •• ${national.slice(7)}`;
 }
 
-export const phoneSchema = z
-  .string()
-  .transform((value, ctx) => {
-    const phone = normaliseUzPhone(value);
-    if (!phone) {
-      ctx.addIssue({ code: 'custom', message: 'invalid_phone' });
-      return z.NEVER;
-    }
-    return phone;
-  });
+export const phoneSchema = z.string().transform((value, ctx) => {
+  const phone = normaliseUzPhone(value);
+  if (!phone) {
+    ctx.addIssue({ code: 'custom', message: 'invalid_phone' });
+    return z.NEVER;
+  }
+  return phone;
+});
 
 export const otpRequestSchema = z.object({
   phone: phoneSchema,

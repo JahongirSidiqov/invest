@@ -4,12 +4,12 @@ Mockups: `docs/design/mockups.pdf` (17 screens, Russian). Screens and states tha
 
 ## Not in the mockups
 
-| Screen | Approach |
-|---|---|
-| PIN setup and PIN entry | 4 dots, numeric keypad with 56 px keys, biometric button on entry screen |
-| Lock screen after 5 min inactivity | same as PIN entry |
-| Onboarding questions 2 and 3 | same layout as question 1 |
-| Error, empty and loading states | inline message in `info` / `danger` colours |
+| Screen                             | Approach                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| PIN setup and PIN entry            | 4 dots, numeric keypad with 56 px keys, biometric button on entry screen |
+| Lock screen after 5 min inactivity | same as PIN entry                                                        |
+| Onboarding questions 2 and 3       | same layout as question 1                                                |
+| Error, empty and loading states    | inline message in `info` / `danger` colours                              |
 
 ## Draft onboarding options (need approval)
 
