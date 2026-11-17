@@ -16,7 +16,7 @@ async function login(phone: string) {
     .expect(200);
   const res = await request(app.getHttpServer())
     .post('/v1/auth/otp/verify')
-    .send({ phone, code: sms.codes.get(phone), device: { platform: 'android' } })
+    .send({ phone, code: sms.codes.get(phone), locale: 'ru', device: { platform: 'android' } })
     .expect(200);
   return res.body as {
     accessToken: string;

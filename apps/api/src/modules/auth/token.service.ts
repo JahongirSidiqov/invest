@@ -85,7 +85,9 @@ export class TokenService {
       });
       if (!current) return { error: 'invalid_token' as const };
 
-      if (current.usedAt || current.revokedAt) {
+      // A token that was already exchanged is being replayed: treat as theft.
+      // A token that was only revoked (logout, or an earlier theft response) is just invalid.
+      if (current.usedAt) {
         await this.revokeAll(tx, current.userId);
         await this.audit.record(tx, {
           actorId: current.userId,
@@ -97,7 +99,7 @@ export class TokenService {
         });
         return { error: 'token_reused' as const };
       }
-      if (current.expiresAt <= new Date() || current.device.revokedAt) {
+      if (current.revokedAt || current.expiresAt <= new Date() || current.device.revokedAt) {
         return { error: 'invalid_token' as const };
       }
 
