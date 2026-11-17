@@ -8,7 +8,8 @@ coverage/
 *.log
 *.tsbuildinfo
 
-# secrets
+# secrets and private data (never commit: the repo is public)
+private-data/
 .env
 .env.*
 !.env.example
@@ -23,3 +24,4 @@ apps/mobile/ios/
 .DS_Store
 Thumbs.db
 .idea/
+*.tmp
