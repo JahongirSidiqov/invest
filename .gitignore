@@ -1,0 +1,25 @@
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.expo/
+.next/
+*.log
+*.tsbuildinfo
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# prisma generated client
+apps/api/src/generated/
+
+# mobile native folders (Expo prebuild)
+apps/mobile/android/
+apps/mobile/ios/
+
+.DS_Store
+Thumbs.db
+.idea/
