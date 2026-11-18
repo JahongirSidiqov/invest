@@ -4,12 +4,18 @@ Mockups: `docs/design/mockups.pdf` (17 screens, Russian). Screens and states tha
 
 ## Not in the mockups
 
-| Screen | Approach |
-|---|---|
-| PIN setup and PIN entry | 4 dots, numeric keypad with 56 px keys, biometric button on entry screen |
-| Lock screen after 5 min inactivity | same as PIN entry |
-| Onboarding questions 2 and 3 | same layout as question 1 |
-| Error, empty and loading states | inline message in `info` / `danger` colours |
+| Screen                              | Approach                                                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| PIN setup and PIN entry             | 4 dots, numeric keypad with 56 px keys, biometric button on entry screen                                  |
+| Lock screen after 5 min inactivity  | same as PIN entry                                                                                         |
+| Onboarding questions 2 and 3        | same layout as question 1                                                                                 |
+| Error, empty and loading states     | inline message in `info` / `danger` colours                                                               |
+| Stage card on Home and stage detail | needs design (TZ core): current stage 1–5, "missing for next stage" in so'm and months, provisional label |
+| Home KPIs                           | needs design: net worth, savings rate, emergency fund months, passive coverage, investment share          |
+| Quick manual entry                  | needs design: type, amount, category, necessity level (essential / moderate / non-essential)              |
+| Assets and net worth                | needs design: list by type, invested vs current value, dividend method, liabilities                       |
+| Monthly report                      | needs design: income, spending by necessity, investments, savings rate, net worth, life model             |
+| Onboarding: savings and spending    | two extra questions for the provisional stage, same layout as question 1                                  |
 
 ## Draft onboarding options (need approval)
 

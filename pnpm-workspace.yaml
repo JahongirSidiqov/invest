@@ -1,0 +1,32 @@
+packages:
+  - apps/*
+  - packages/*
+minimumReleaseAgeExclude:
+  - '@nestjs/common@12.5.1'
+  - '@nestjs/core@12.5.1'
+  - '@nestjs/platform-express@12.5.1'
+  - '@nestjs/testing@12.5.1'
+  - '@typescript-eslint/eslint-plugin@8.73.0'
+  - '@typescript-eslint/parser@8.73.0'
+  - '@typescript-eslint/project-service@8.73.0'
+  - '@typescript-eslint/scope-manager@8.73.0'
+  - '@typescript-eslint/tsconfig-utils@8.73.0'
+  - '@typescript-eslint/type-utils@8.73.0'
+  - '@typescript-eslint/types@8.73.0'
+  - '@typescript-eslint/typescript-estree@8.73.0'
+  - '@typescript-eslint/utils@8.73.0'
+  - '@typescript-eslint/visitor-keys@8.73.0'
+  - typescript-eslint@8.73.0
+  - '@expo/cli@58.1.21'
+  - '@expo/metro-config@58.0.23'
+  - '@expo/router-server@58.0.23'
+  - babel-preset-expo@58.0.26
+  - expo-file-system@58.0.14
+  - expo@58.0.26
+  - expo-router@58.0.32
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true
+  '@swc/core': true
+  '@scarf/scarf': false
+  '@parcel/watcher': true

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: invest
+          POSTGRES_PASSWORD: invest
+          POSTGRES_DB: invest_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U invest" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://invest:invest@localhost:5432/invest_test
+      APP_DATABASE_URL: postgresql://invest_app:invest_app@localhost:5432/invest_test
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level high
+      - run: pnpm format:check
+      - run: pnpm --filter api prisma:generate
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+
+      - name: OpenAPI spec is up to date
+        run: |
+          pnpm --filter api openapi
+          pnpm --filter @invest/api-client generate
+          git diff --exit-code -- apps/api/openapi.json packages/api-client/src/schema.d.ts
+
+      - name: Create application role (prod creates it in infra)
+        run: |
+          PGPASSWORD=invest psql -h localhost -U invest -d invest_test \
+            -c "CREATE ROLE invest_app LOGIN PASSWORD 'invest_app';"
+
+      - run: pnpm --filter api prisma:deploy
+      - run: pnpm --filter api test:int

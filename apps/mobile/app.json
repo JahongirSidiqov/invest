@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "[APP_NAME]",
+    "slug": "invest",
+    "scheme": "invest",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "uz.invest.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Face ID is used to unlock the app instead of your PIN."
+      }
+    },
+    "android": {
+      "package": "uz.invest.app",
+      "allowBackup": false,
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      "expo-font",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Face ID is used to unlock the app instead of your PIN."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4F6F3"
+        }
+      ],
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "@invest/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"],
+    "declaration": false
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,94 @@
+{
+  "common": {
+    "continue": "Davom etish",
+    "next": "Keyingi",
+    "skip": "Oʻtkazib yuborish",
+    "back": "Orqaga",
+    "confirm": "Tasdiqlash",
+    "sum": "soʻm",
+    "error": "Nimadir xato ketdi. Qaytadan urinib koʻring.",
+    "offline": "Internetga ulanish yoʻq"
+  },
+  "welcome": {
+    "title": "Pulingiz nazoratda — shunchaki ovoz chiqarib ayting",
+    "subtitle": "Xarajatlarni ovoz bilan hisoblash, byudjet, moliyaviy savodxonlik darslari va halol investitsiyalar.",
+    "example": "«Tushlik 40 ming»",
+    "exampleCategory": "Ovqat",
+    "exampleNote": "Tushlik · bugun",
+    "chooseLanguage": "Tilni tanlang · Выберите язык · Choose language",
+    "privacyPrefix": "Davom etish orqali siz",
+    "privacyLink": "maxfiylik siyosatini qabul qilasiz"
+  },
+  "login": {
+    "title": "Kirish yoki roʻyxatdan oʻtish",
+    "subtitle": "Raqamingizga SMS-kod yuboramiz. Parol oʻylab topish shart emas.",
+    "phone": "Telefon raqami",
+    "getCode": "Kodni olish",
+    "code": "SMS-kod",
+    "resendIn": "Qayta yuborish {{time}} dan keyin",
+    "resend": "Qayta yuborish",
+    "pinHint": "Kirgandan soʻng 4 xonali PIN-kod oʻrnatasiz va barmoq izi yoki Face ID orqali kira olasiz.",
+    "errors": {
+      "invalid_phone": "Raqamni tekshiring: +998 dan keyin 9 ta raqam",
+      "otp_invalid": "Kod notoʻgʻri",
+      "otp_expired": "Kod eskirdi. Yangisini soʻrang.",
+      "otp_attempts_exceeded": "Urinishlar juda koʻp. Yangi kod soʻrang.",
+      "otp_cooldown": "Qayta yuborishdan oldin biroz kuting",
+      "rate_limited": "Soʻrovlar juda koʻp. Keyinroq urinib koʻring."
+    }
+  },
+  "pin": {
+    "createTitle": "PIN-kod oʻylab toping",
+    "createSubtitle": "Tez kirish uchun 4 ta raqam",
+    "repeatTitle": "PIN-kodni takrorlang",
+    "mismatch": "PIN-kodlar mos kelmadi",
+    "enterTitle": "PIN-kodni kiriting",
+    "wrong": "PIN notoʻgʻri. Qolgan urinishlar: {{count}}",
+    "locked": "Xatolar juda koʻp. SMS orqali qayta kiring.",
+    "biometricTitle": "Barmoq izi yoki Face ID bilan kirilsinmi?",
+    "biometricEnable": "Yoqish",
+    "biometricLater": "Hozir emas",
+    "biometricPrompt": "Ilovaga kirish",
+    "useBiometric": "Biometriya bilan kirish",
+    "delete": "Oʻchirish"
+  },
+  "onboarding": {
+    "progress": "{{total}} savoldan {{current}}-savol",
+    "footer": "Javoblar dars va maslahatlarni tanlash uchun kerak. Ularni profilda oʻzgartirish mumkin.",
+    "income": {
+      "title": "Oylik daromadingiz taxminan qancha?",
+      "subtitle": "Shunga qarab birinchi byudjetni taklif qilamiz.",
+      "lt3m": "3 mln soʻmgacha",
+      "3to6m": "3–6 mln soʻm",
+      "6to10m": "6–10 mln soʻm",
+      "gt10m": "10 mln soʻmdan koʻp",
+      "undisclosed": "Aytmoqchi emasman"
+    },
+    "goal": {
+      "title": "Asosiy maqsadingiz nima?",
+      "subtitle": "Darslarni shunga qarab tanlaymiz.",
+      "track": "Pul qayerga ketayotganini bilish",
+      "cushion": "Moliyaviy yostiqcha yigʻish",
+      "purchase": "Xarid uchun pul yigʻish",
+      "invest": "Investitsiya qilishni boshlash",
+      "debt": "Qarz va nasiyalarni yopish"
+    },
+    "halal": {
+      "title": "Vositalar halol boʻlishi muhimmi?",
+      "subtitle": "Bu investitsiya katalogiga taʼsir qiladi.",
+      "only": "Faqat halol",
+      "preferred": "Halol boʻlsa yaxshi",
+      "none": "Muhim emas"
+    }
+  },
+  "tabs": {
+    "home": "Asosiy",
+    "budget": "Byudjet",
+    "voice": "Ovozli kiritish",
+    "learn": "Taʼlim",
+    "invest": "Invest"
+  },
+  "placeholder": {
+    "soon": "Bu ekran keyingi bosqichlarda paydo boʻladi"
+  }
+}

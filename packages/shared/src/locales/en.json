@@ -1,0 +1,94 @@
+{
+  "common": {
+    "continue": "Continue",
+    "next": "Next",
+    "skip": "Skip",
+    "back": "Back",
+    "confirm": "Confirm",
+    "sum": "sum",
+    "error": "Something went wrong. Please try again.",
+    "offline": "No internet connection"
+  },
+  "welcome": {
+    "title": "Money under control — just say it out loud",
+    "subtitle": "Voice expense tracking, budgets, money lessons and halal investments.",
+    "example": "“Tushlik 40 ming”",
+    "exampleCategory": "Food",
+    "exampleNote": "Lunch · today",
+    "chooseLanguage": "Choose language · Tilni tanlang · Выберите язык",
+    "privacyPrefix": "By continuing you accept the",
+    "privacyLink": "privacy policy"
+  },
+  "login": {
+    "title": "Log in or sign up",
+    "subtitle": "We will text a code to your number. No password needed.",
+    "phone": "Phone number",
+    "getCode": "Get code",
+    "code": "SMS code",
+    "resendIn": "Resend in {{time}}",
+    "resend": "Send again",
+    "pinHint": "After logging in you will set a 4-digit PIN and can use your fingerprint or Face ID.",
+    "errors": {
+      "invalid_phone": "Check the number: 9 digits after +998",
+      "otp_invalid": "Wrong code",
+      "otp_expired": "The code has expired. Request a new one.",
+      "otp_attempts_exceeded": "Too many attempts. Request a new code.",
+      "otp_cooldown": "Please wait before resending",
+      "rate_limited": "Too many requests. Try again later."
+    }
+  },
+  "pin": {
+    "createTitle": "Create a PIN",
+    "createSubtitle": "4 digits for quick access",
+    "repeatTitle": "Repeat the PIN",
+    "mismatch": "The PINs do not match",
+    "enterTitle": "Enter your PIN",
+    "wrong": "Wrong PIN. Attempts left: {{count}}",
+    "locked": "Too many errors. Log in again by SMS.",
+    "biometricTitle": "Use fingerprint or Face ID to log in?",
+    "biometricEnable": "Turn on",
+    "biometricLater": "Not now",
+    "biometricPrompt": "Unlock the app",
+    "useBiometric": "Use biometrics",
+    "delete": "Delete"
+  },
+  "onboarding": {
+    "progress": "Question {{current}} of {{total}}",
+    "footer": "Your answers help us pick lessons and tips. You can change them in your profile.",
+    "income": {
+      "title": "What is your approximate monthly income?",
+      "subtitle": "We will suggest your first budget from it.",
+      "lt3m": "Up to 3 mln sum",
+      "3to6m": "3–6 mln sum",
+      "6to10m": "6–10 mln sum",
+      "gt10m": "Over 10 mln sum",
+      "undisclosed": "Prefer not to say"
+    },
+    "goal": {
+      "title": "What is your main goal?",
+      "subtitle": "We will pick lessons for it.",
+      "track": "See where my money goes",
+      "cushion": "Build a safety cushion",
+      "purchase": "Save for a purchase",
+      "invest": "Start investing",
+      "debt": "Pay off debts and nasiya"
+    },
+    "halal": {
+      "title": "Do investments need to be halal?",
+      "subtitle": "This affects the investment catalogue.",
+      "only": "Halal only",
+      "preferred": "Halal preferred",
+      "none": "Does not matter"
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "budget": "Budget",
+    "voice": "Voice entry",
+    "learn": "Learn",
+    "invest": "Invest"
+  },
+  "placeholder": {
+    "soon": "This screen arrives in a later phase"
+  }
+}

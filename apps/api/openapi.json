@@ -1,0 +1,758 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/auth/otp/request": {
+      "post": {
+        "operationId": "AuthController_requestOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "default": "uz",
+                    "type": "string",
+                    "enum": [
+                      "uz",
+                      "ru",
+                      "en"
+                    ]
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resendIn": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "resendIn"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "AuthController_verifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "device": {
+                    "type": "object",
+                    "properties": {
+                      "platform": {
+                        "type": "string",
+                        "enum": [
+                          "android",
+                          "ios",
+                          "web"
+                        ]
+                      },
+                      "name": {
+                        "type": "string",
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "platform"
+                    ]
+                  },
+                  "locale": {
+                    "default": "uz",
+                    "type": "string",
+                    "enum": [
+                      "uz",
+                      "ru",
+                      "en"
+                    ]
+                  }
+                },
+                "required": [
+                  "phone",
+                  "code",
+                  "device"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string"
+                    },
+                    "accessTokenExpiresIn": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "refreshToken": {
+                      "type": "string"
+                    },
+                    "refreshTokenExpiresIn": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "isNewUser": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "accessToken",
+                    "accessTokenExpiresIn",
+                    "refreshToken",
+                    "refreshTokenExpiresIn",
+                    "userId",
+                    "isNewUser"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "minLength": 32,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "refreshToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string"
+                    },
+                    "accessTokenExpiresIn": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "refreshToken": {
+                      "type": "string"
+                    },
+                    "refreshTokenExpiresIn": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "accessToken",
+                    "accessTokenExpiresIn",
+                    "refreshToken",
+                    "refreshTokenExpiresIn"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout-all": {
+      "post": {
+        "operationId": "AuthController_logoutAll",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "UsersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "phoneMasked": {
+                      "type": "string"
+                    },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "uz",
+                        "ru",
+                        "en"
+                      ]
+                    },
+                    "incomeRange": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "goal": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "halalPref": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "riskProfile": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "planTier": {
+                      "type": "string"
+                    },
+                    "onboarded": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phoneMasked",
+                    "locale",
+                    "incomeRange",
+                    "goal",
+                    "halalPref",
+                    "riskProfile",
+                    "planTier",
+                    "onboarded"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "locale": {
+                    "type": "string",
+                    "enum": [
+                      "uz",
+                      "ru",
+                      "en"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "phoneMasked": {
+                      "type": "string"
+                    },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "uz",
+                        "ru",
+                        "en"
+                      ]
+                    },
+                    "incomeRange": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "goal": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "halalPref": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "riskProfile": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "planTier": {
+                      "type": "string"
+                    },
+                    "onboarded": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phoneMasked",
+                    "locale",
+                    "incomeRange",
+                    "goal",
+                    "halalPref",
+                    "riskProfile",
+                    "planTier",
+                    "onboarded"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v1/me/onboarding": {
+      "put": {
+        "operationId": "UsersController_saveOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "incomeRange": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "lt3m",
+                          "3to6m",
+                          "6to10m",
+                          "gt10m",
+                          "undisclosed"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "goal": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "track",
+                          "cushion",
+                          "purchase",
+                          "invest",
+                          "debt"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "halalPref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "only",
+                          "preferred",
+                          "none"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "incomeRange",
+                  "goal",
+                  "halalPref"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "phoneMasked": {
+                      "type": "string"
+                    },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "uz",
+                        "ru",
+                        "en"
+                      ]
+                    },
+                    "incomeRange": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "goal": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "halalPref": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "riskProfile": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "planTier": {
+                      "type": "string"
+                    },
+                    "onboarded": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phoneMasked",
+                    "locale",
+                    "incomeRange",
+                    "goal",
+                    "halalPref",
+                    "riskProfile",
+                    "planTier",
+                    "onboarded"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v1/me/consents": {
+      "post": {
+        "operationId": "UsersController_setConsent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "privacy",
+                      "mic",
+                      "partners"
+                    ]
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "granted": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "version",
+                  "granted"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "grantedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "version",
+                      "grantedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Invest API",
+    "description": "",
+    "version": "1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {}
+  }
+}

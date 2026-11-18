@@ -20,7 +20,7 @@ Personal data never leaves the Uzbek servers. External AI receives only masked t
 
 ## Modules
 
-auth, users, transactions, voice, categories, budget, insights, learning, invest, planner, billing, rewards, notifications, orders (V2), admin, ai. Modules call each other only through exported services, never through each other's tables, so any module can later be split into its own service.
+auth, users, transactions, categories, assets, finance (stages, KPIs, monthly report), budget, voice, insights, learning, invest, planner, billing, rewards, notifications, admin, ai; later debts, family, orders. Stage and KPI formulas live in `packages/shared` and run on both the phone (offline) and the server; see [FINANCE_MODEL.md](FINANCE_MODEL.md). Modules call each other only through exported services, never through each other's tables, so any module can later be split into its own service.
 
 ## API rules
 
@@ -38,7 +38,7 @@ Phone + SMS OTP (6 digits, 5 minutes, max 5 requests per number per hour). Acces
 
 ## AI layer
 
-AI handles language only; all numbers are computed in backend code. Voice: audio in memory → STT adapter → masked transcript → LLM with JSON schema → deterministic normalisation → draft transactions → user confirms. Fallback: rule-based parser, then manual entry.
+AI handles language only; all numbers come from deterministic code in `packages/shared` (on the phone and the server). Voice: audio in memory → STT adapter → masked transcript → LLM with JSON schema → deterministic normalisation → draft transactions → user confirms. Fallback: rule-based parser, then manual entry.
 
 ## Infrastructure
 
@@ -46,4 +46,4 @@ Docker containers in an Uzbek data centre; dev, staging and prod with separate d
 
 ## Roadmap
 
-Phase 0 preparation (legal, STT test) → MVP (phases 1–7 in the brief) → closed beta (200–500 users) → V1.1 (chat assistant, receipts, forecasts) → V2 (MyID, purchases via partners).
+Merged plan (docs/adr/0002-merged-brief.md): foundation → budget and offline → assets → stages and monthly report → closed beta on Google Play (100 users) → voice → lessons → invest information and calculators → subscription → hardening. Later: debts, family mode, AI assistant, purchases via partners.

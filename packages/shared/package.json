@@ -1,0 +1,29 @@
+{
+  "name": "@invest/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./locales/*": "./src/locales/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@invest/config": "workspace:*",
+    "eslint": "^10.15.0",
+    "vitest": "^5.1.0"
+  }
+}

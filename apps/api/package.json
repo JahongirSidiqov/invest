@@ -1,0 +1,49 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --project unit",
+    "test:int": "vitest run --project integration",
+    "openapi": "node dist/openapi.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@invest/shared": "workspace:*",
+    "@nestjs/common": "^12.5.1",
+    "@nestjs/core": "^12.5.1",
+    "@nestjs/platform-express": "^12.5.1",
+    "@nestjs/swagger": "^12.1.2",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "ioredis": "^6.0.0",
+    "jose": "^6.2.17",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@invest/config": "workspace:*",
+    "@nestjs/cli": "^12.0.13",
+    "@nestjs/testing": "^12.5.1",
+    "@swc/core": "^1.13.5",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.6.0",
+    "@types/pg": "^8.15.5",
+    "@types/supertest": "^6.0.3",
+    "dotenv": "^17.2.3",
+    "eslint": "^10.15.0",
+    "prisma": "7.10.1",
+    "supertest": "^7.1.4",
+    "unplugin-swc": "^1.5.7",
+    "vitest": "^5.1.0"
+  }
+}

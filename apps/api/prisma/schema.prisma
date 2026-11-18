@@ -1,0 +1,114 @@
+// Schema v1 (phase 1): identity, devices, sessions, consents, audit.
+// Later phases add their tables in separate migrations.
+// Every table: id (UUID v7), created_at, updated_at.
+// User-owned tables are protected by row-level security (see migration SQL).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  /// AES-256-GCM ciphertext of the E.164 phone number
+  phoneEnc    Bytes     @map("phone_enc")
+  /// HMAC-SHA256 of the E.164 phone number, hex; used for lookup
+  phoneHash   String    @unique @map("phone_hash")
+  /// AES-256-GCM ciphertext of the display name
+  nameEnc     Bytes?    @map("name_enc")
+  locale      String    @default("uz")
+  incomeRange String?   @map("income_range")
+  goal        String?
+  halalPref   String?   @map("halal_pref")
+  riskProfile String?   @map("risk_profile")
+  planTier    String    @default("free") @map("plan_tier")
+  onboardedAt DateTime? @map("onboarded_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  devices       Device[]
+  refreshTokens RefreshToken[]
+  consents      Consent[]
+
+  @@map("users")
+}
+
+model Device {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  platform   String
+  name       String?
+  pushToken  String?   @map("push_token")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+  @@map("devices")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  deviceId    String    @map("device_id") @db.Uuid
+  /// SHA-256 of the opaque token, hex
+  tokenHash   String    @unique @map("token_hash")
+  expiresAt   DateTime  @map("expires_at")
+  /// id of the token this one replaced
+  rotatedFrom String?   @map("rotated_from") @db.Uuid
+  /// set when the token is exchanged; a second use means it leaked
+  usedAt      DateTime? @map("used_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deviceId])
+  @@map("refresh_tokens")
+}
+
+/// Consent history is never deleted: granting inserts a row, revoking sets revoked_at.
+model Consent {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  type      String
+  version   String
+  grantedAt DateTime  @default(now()) @map("granted_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("consents")
+}
+
+/// Append-only: the application role has no UPDATE or DELETE on this table.
+model AuditLog {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  actorType String   @map("actor_type")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
