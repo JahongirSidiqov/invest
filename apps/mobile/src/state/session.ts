@@ -78,6 +78,9 @@ export const useSession = create<SessionState>((set, get) => ({
   unlocked: () => set({ stage: 'ready' }),
 
   async signOut() {
+    // Local records belong to this user only. Dynamic import avoids a module cycle.
+    const { resetLocalRecords } = await import('../records');
+    await resetLocalRecords();
     await secure.clearSession();
     set({ accessToken: null, stage: 'login' });
   },

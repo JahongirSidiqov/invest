@@ -86,9 +86,80 @@
     "budget": "Budget",
     "voice": "Voice entry",
     "learn": "Learn",
-    "invest": "Invest"
+    "invest": "Invest",
+    "manualHint": "Long-press for manual entry"
   },
   "placeholder": {
     "soon": "This screen arrives in a later phase"
+  },
+  "categories": {
+    "food": "Groceries",
+    "cafe": "Cafe",
+    "transport": "Transport",
+    "housing": "Housing, rent",
+    "utilities": "Utilities",
+    "phone_internet": "Phone and internet",
+    "nasiya": "Nasiya",
+    "health": "Health",
+    "education": "Education",
+    "clothing": "Clothing",
+    "gifts": "Gifts",
+    "sadaqa": "Sadaqa",
+    "family_help": "Help to family",
+    "other_expense": "Other",
+    "salary": "Salary",
+    "side_job": "Side job, tutoring",
+    "stipend": "Stipend",
+    "other_active": "Other income",
+    "rent_income": "Rental income",
+    "other_passive": "Other passive income"
+  },
+  "types": {
+    "expense": "Expense",
+    "income_active": "Income",
+    "income_passive": "Passive income",
+    "investment": "Investment",
+    "dividend": "Dividend"
+  },
+  "necessity": {
+    "essential": "Essential",
+    "moderate": "Moderate",
+    "non_essential": "Non-essential"
+  },
+  "entry": {
+    "title": "New record",
+    "editTitle": "Edit record",
+    "amount": "Amount",
+    "category": "Category",
+    "necessity": "Necessity",
+    "date": "Date",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "note": "Note",
+    "notePlaceholder": "e.g. lunch",
+    "save": "Save",
+    "delete": "Delete",
+    "passive": "Passive income",
+    "offlineSaved": "Saved. It will be sent when you are online.",
+    "errors": {
+      "amount": "Enter an amount",
+      "category": "Choose a category"
+    }
+  },
+  "history": {
+    "title": "History",
+    "empty": "No records yet. Long-press the microphone button to add one by hand.",
+    "all": "All",
+    "pending": "Not sent",
+    "add": "Add",
+    "sync": "Refresh",
+    "synced": "Everything is sent",
+    "lastSync": "Updated: {{time}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "reserve": "Minimum balance on the card",
+    "reserveHint": "Anything above it counts as “money waiting to be invested”.",
+    "saved": "Saved"
   }
 }

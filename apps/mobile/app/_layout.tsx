@@ -13,11 +13,19 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useAutoSync, useRecordsInvalidation } from '../src/records/hooks';
 import { useSession } from '../src/state/session';
 import { theme } from '../src/theme/tokens';
 
 void SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
+
+/** Keeps local queries fresh and syncs in the background once the user is in the app. */
+function RecordsBridge({ enabled }: { enabled: boolean }) {
+  useRecordsInvalidation();
+  useAutoSync(enabled);
+  return null;
+}
 
 export default function RootLayout() {
   const stage = useSession((s) => s.stage);
@@ -74,8 +82,12 @@ export default function RootLayout() {
           <Stack.Protected guard={stage === 'ready'}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="voice" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="entry" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="history" />
+            <Stack.Screen name="settings" />
           </Stack.Protected>
         </Stack>
+        <RecordsBridge enabled={stage === 'ready'} />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

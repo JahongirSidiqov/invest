@@ -34,12 +34,24 @@ In development, OTP codes are printed to the API console instead of being sent b
 
 ### Mobile app on your phone
 
-1. Install **Expo Go** on the phone; phone and computer on the same Wi-Fi.
+The app uses an encrypted database (SQLCipher), which Expo Go does not include, so the phone needs a **development build** once. After that, saving a file reloads the app instantly, as in Expo Go.
+
+1. Enable USB debugging on the phone and connect it (or start an Android Studio emulator).
+2. Point the build at Android Studio's Java and SDK (PowerShell):
+   ```powershell
+   $env:JAVA_HOME = "C:Program FilesAndroidAndroid Studiojbr"
+   $env:ANDROID_HOME = "$env:LOCALAPPDATAAndroidSdk"
+   ```
+3. Build and install once: `pnpm --filter mobile exec expo run:android`.
+
+Day to day:
+
+1. Phone and computer on the same Wi-Fi.
 2. Find the computer's IP (`ipconfig`, e.g. `192.168.1.10`) and create `apps/mobile/.env`:
    ```
    EXPO_PUBLIC_API_URL=http://192.168.1.10:3000
    ```
-3. Start Expo and scan the QR code with Expo Go:
+3. Start Metro; the installed development build connects to it:
    ```sh
    pnpm --filter mobile dev
    ```

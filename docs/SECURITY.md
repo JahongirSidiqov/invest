@@ -24,3 +24,17 @@ OWASP ASVS level 2 is the target. The full checklist is filled in during phase 7
 - Certificate pinning in the mobile app needs the production domain (phase 7).
 - Access tokens stay valid up to 15 min after "log out everywhere"; acceptable for the MVP, revisit if a device-revocation check per request is needed.
 - Key rotation for PII_ENC_KEY: the ciphertext carries a version byte so a second key can be added.
+
+## Phase 2 (budget and offline)
+
+| Control                                                                                                                                                              | Where                                     | Test                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| Local records encrypted with SQLCipher; 256-bit key generated per install, kept in SecureStore (this device only); release builds refuse to start without encryption | `apps/mobile/src/records/sqlite-store.ts` | manual on a development build       |
+| Local database deleted on sign-out                                                                                                                                   | `apps/mobile/src/state/session.ts`        | manual                              |
+| RLS on user_settings, categories, transactions; cross-user category references rejected                                                                              | migration `0002_budget_offline`           | `records.int.ts`                    |
+| Sync requires Idempotency-Key; replays return the stored response; batch capped at 500                                                                               | `sync.service.ts`                         | `records.int.ts`                    |
+| Amounts validated as positive safe integers below 10^15 tiyin; DB check constraints on type, necessity, source, amount                                               | shared schemas, migration                 | `records.test.ts`, `records.int.ts` |
+
+## Open dependency advisories
+
+- GHSA-fc5q-39xc-vjpf (picomatch ReDoS, high, no patched version on 2026-11-18). Reached only through Metro, the build-time bundler; it is not shipped in the app or the API, and its glob patterns come from developers. CI `pnpm audit` fails on it until the project owner decides whether to record it as an accepted exception. Revisit when picomatch publishes a fix.

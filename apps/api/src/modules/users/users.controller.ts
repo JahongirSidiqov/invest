@@ -1,10 +1,18 @@
 import { Body, Controller, Get, HttpCode, Ip, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { consentSchema, LOCALES, onboardingSchema, updateMeSchema } from '@invest/shared';
+import {
+  consentSchema,
+  LOCALES,
+  onboardingSchema,
+  type Settings,
+  settingsSchema,
+  updateMeSchema,
+} from '@invest/shared';
 import { z } from 'zod';
 import { bodySchema, responseSchema, ZodPipe } from '../../common/zod';
 import { Auth, AuthGuard } from '../auth/auth.guard';
 import type { AccessClaims } from '../auth/token.service';
+import { SettingsService } from './settings.service';
 import { UsersService } from './users.service';
 
 const meView = z.object({
@@ -28,7 +36,10 @@ const consentList = z.array(
 @UseGuards(AuthGuard)
 @Controller('me')
 export class UsersController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly settings: SettingsService,
+  ) {}
 
   @Get()
   @ApiOkResponse({ schema: responseSchema(meView) })
@@ -66,5 +77,18 @@ export class UsersController {
     @Ip() ip: string,
   ) {
     return this.users.setConsent(auth.userId, body, ip);
+  }
+
+  @Get('settings')
+  @ApiOkResponse({ schema: responseSchema(settingsSchema) })
+  getSettings(@Auth() auth: AccessClaims) {
+    return this.settings.get(auth.userId);
+  }
+
+  @Put('settings')
+  @ApiBody({ schema: bodySchema(settingsSchema) })
+  @ApiOkResponse({ schema: responseSchema(settingsSchema) })
+  putSettings(@Auth() auth: AccessClaims, @Body(new ZodPipe(settingsSchema)) body: Settings) {
+    return this.settings.put(auth.userId, body);
   }
 }
