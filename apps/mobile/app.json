@@ -36,7 +36,9 @@
           "backgroundColor": "#F4F6F3"
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      ["expo-sqlite", { "useSQLCipher": true }],
+      "expo-dev-client"
     ],
     "experiments": {
       "typedRoutes": true

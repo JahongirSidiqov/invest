@@ -86,7 +86,8 @@
     "budget": "Budget",
     "voice": "Voice entry",
     "learn": "Learn",
-    "invest": "Invest"
+    "invest": "Invest",
+    "manualHint": "Long-press for manual entry"
   },
   "placeholder": {
     "soon": "This screen arrives in a later phase"

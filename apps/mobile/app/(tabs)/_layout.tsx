@@ -41,7 +41,11 @@ export default function TabsLayout() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('tabs.voice')}
+                accessibilityHint={t('tabs.manualHint')}
+                accessibilityActions={[{ name: 'longpress', label: t('entry.title') }]}
+                onAccessibilityAction={() => router.push('/entry')}
                 onPress={() => router.push('/voice')}
+                onLongPress={() => router.push('/entry')}
                 style={styles.mic}
               >
                 <Feather name="mic" size={30} color={theme.onPrimary} />

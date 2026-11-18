@@ -47,3 +47,11 @@ Docker containers in an Uzbek data centre; dev, staging and prod with separate d
 ## Roadmap
 
 Merged plan (docs/adr/0002-merged-brief.md): foundation → budget and offline → assets → stages and monthly report → closed beta on Google Play (100 users) → voice → lessons → invest information and calculators → subscription → hardening. Later: debts, family mode, AI assistant, purchases via partners.
+
+## Offline sync (phase 2)
+
+- The phone writes every record to an encrypted SQLite database (SQLCipher, key in the OS keystore) with status `pending`, then syncs in the background: on start, on return to the foreground, when the network comes back and one second after an entry.
+- `POST /v1/sync` is the only write path for categories and transactions. One request pushes up to 500 pending rows and pulls server rows newer than the client's cursor. It requires `Idempotency-Key`; a repeated key returns the stored response.
+- Conflicts: last write wins by `client_updated_at`, the same `lww()` function from `packages/shared` on both sides. A local pending edit newer than the server copy is never overwritten. Deletes are tombstones.
+- Cursor: a database sequence stamps `server_version` on every insert and update (trigger). Writes for one user run under a Postgres advisory lock, so versions commit in order and a pull cannot skip a row.
+- Built-in categories live in `packages/shared`; transactions reference them by slug, or a custom category by its client id.

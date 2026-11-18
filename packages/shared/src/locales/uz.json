@@ -86,7 +86,8 @@
     "budget": "Byudjet",
     "voice": "Ovozli kiritish",
     "learn": "Taʼlim",
-    "invest": "Invest"
+    "invest": "Invest",
+    "manualHint": "Uzoq bosing: qoʻlda kiritish"
   },
   "placeholder": {
     "soon": "Bu ekran keyingi bosqichlarda paydo boʻladi"

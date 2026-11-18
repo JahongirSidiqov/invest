@@ -8,6 +8,7 @@ const KEYS = {
   pinAttempts: 'pin_attempts',
   biometric: 'biometric_enabled',
   locale: 'locale',
+  dbKey: 'db_key',
 } as const;
 
 type Key = keyof typeof KEYS;
