@@ -112,3 +112,66 @@ model AuditLog {
   @@index([entity, entityId])
   @@map("audit_logs")
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2: settings, custom categories, transactions (offline sync)
+// Syncable rows carry the phone's client_id, client_updated_at (last write wins),
+// deleted_at (tombstone) and server_version (sync cursor, set by a trigger).
+// ---------------------------------------------------------------------------
+
+model UserSettings {
+  userId        String   @id @map("user_id") @db.Uuid
+  /// minimum card balance in tiyin; above it is "waiting to be invested"
+  reserveMinor  BigInt   @map("reserve_minor")
+  inflationRate Decimal? @map("inflation_rate") @db.Decimal(6, 4)
+  returnRate    Decimal? @map("return_rate") @db.Decimal(6, 4)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("user_settings")
+}
+
+/// Custom categories only; built-in categories live in packages/shared.
+model Category {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  clientId        String    @map("client_id") @db.Uuid
+  kind            String
+  name            String
+  necessity       String?
+  icon            String?
+  clientUpdatedAt DateTime  @map("client_updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  serverVersion   BigInt    @default(dbgenerated("nextval('sync_version_seq')")) @map("server_version")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, clientId])
+  @@index([userId, serverVersion])
+  @@map("categories")
+}
+
+model Transaction {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  clientId        String    @map("client_id") @db.Uuid
+  type            String
+  amountMinor     BigInt    @map("amount_minor")
+  currency        String    @db.Char(3)
+  /// built-in slug or the client id of a custom category
+  category        String?
+  necessity       String?
+  occurredOn      DateTime  @map("occurred_on") @db.Date
+  note            String?
+  source          String
+  clientUpdatedAt DateTime  @map("client_updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  serverVersion   BigInt    @default(dbgenerated("nextval('sync_version_seq')")) @map("server_version")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, clientId])
+  @@index([userId, serverVersion])
+  @@index([userId, occurredOn])
+  @@map("transactions")
+}

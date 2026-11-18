@@ -90,5 +90,75 @@
   },
   "placeholder": {
     "soon": "Bu ekran keyingi bosqichlarda paydo boʻladi"
+  },
+  "categories": {
+    "food": "Oziq-ovqat",
+    "cafe": "Kafe",
+    "transport": "Transport",
+    "housing": "Uy-joy, ijara",
+    "utilities": "Kommunal",
+    "phone_internet": "Aloqa va internet",
+    "nasiya": "Nasiya",
+    "health": "Sogʻliq",
+    "education": "Taʼlim",
+    "clothing": "Kiyim",
+    "gifts": "Sovgʻalar",
+    "sadaqa": "Sadaqa",
+    "family_help": "Yaqinlarga yordam",
+    "other_expense": "Boshqa xarajat",
+    "salary": "Maosh",
+    "side_job": "Qoʻshimcha ish, dars",
+    "stipend": "Stipendiya",
+    "other_active": "Boshqa daromad",
+    "rent_income": "Ijaradan tushum",
+    "other_passive": "Boshqa passiv daromad"
+  },
+  "types": {
+    "expense": "Xarajat",
+    "income_active": "Daromad",
+    "income_passive": "Passiv daromad",
+    "investment": "Investitsiya",
+    "dividend": "Dividend"
+  },
+  "necessity": {
+    "essential": "Zarur",
+    "moderate": "Oʻrtacha",
+    "non_essential": "Zarur emas"
+  },
+  "entry": {
+    "title": "Yangi yozuv",
+    "editTitle": "Yozuvni tahrirlash",
+    "amount": "Summa",
+    "category": "Kategoriya",
+    "necessity": "Zaruriyat",
+    "date": "Sana",
+    "today": "Bugun",
+    "yesterday": "Kecha",
+    "note": "Izoh",
+    "notePlaceholder": "Masalan: tushlik",
+    "save": "Saqlash",
+    "delete": "Oʻchirish",
+    "passive": "Passiv daromad",
+    "offlineSaved": "Saqlandi. Internet boʻlganda yuboriladi.",
+    "errors": {
+      "amount": "Summani kiriting",
+      "category": "Kategoriyani tanlang"
+    }
+  },
+  "history": {
+    "title": "Tarix",
+    "empty": "Hali yozuv yoʻq. Mikrofon tugmasini uzoq bosib qoʻlda qoʻshing.",
+    "all": "Hammasi",
+    "pending": "Yuborilmagan",
+    "add": "Qoʻshish",
+    "sync": "Yangilash",
+    "synced": "Hammasi yuborildi",
+    "lastSync": "Oxirgi yangilanish: {{time}}"
+  },
+  "settings": {
+    "title": "Sozlamalar",
+    "reserve": "Kartadagi minimal zaxira",
+    "reserveHint": "Bundan ortigʻi “investitsiyaga yigʻilayotgan pul” deb hisoblanadi.",
+    "saved": "Saqlandi"
   }
 }

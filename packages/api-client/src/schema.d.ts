@@ -148,6 +148,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["UsersController_getSettings"];
+        put: operations["UsersController_putSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RecordsController_listCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RecordsController_listTransactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RecordsController_sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -458,6 +522,232 @@ export interface operations {
                         /** Format: date-time */
                         grantedAt: string;
                     }[];
+                };
+            };
+        };
+    };
+    UsersController_getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reserveMinor: number;
+                        inflationRate: number | null;
+                        returnRate: number | null;
+                    };
+                };
+            };
+        };
+    };
+    UsersController_putSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reserveMinor: number;
+                    inflationRate: number | null;
+                    returnRate: number | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reserveMinor: number;
+                        inflationRate: number | null;
+                        returnRate: number | null;
+                    };
+                };
+            };
+        };
+    };
+    RecordsController_listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ref: string;
+                        builtIn: boolean;
+                        /** @enum {string} */
+                        kind: "expense" | "income_active" | "income_passive";
+                        name: string | null;
+                        necessity: ("essential" | "moderate" | "non_essential") | null;
+                        icon: string | null;
+                    }[];
+                };
+            };
+        };
+    };
+    RecordsController_listTransactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** @enum {string} */
+                            type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
+                            amountMinor: number;
+                            /** @enum {string} */
+                            currency: "UZS" | "USD";
+                            category: (string) | null;
+                            necessity: ("essential" | "moderate" | "non_essential") | null;
+                            occurredOn: string;
+                            note: string | null;
+                            /** @enum {string} */
+                            source: "manual" | "voice";
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    RecordsController_sync: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description 8–64 chars [A-Za-z0-9_-] */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    cursor: string | null;
+                    /** @default [] */
+                    categories?: {
+                        /** Format: uuid */
+                        clientId: string;
+                        /** @enum {string} */
+                        kind: "expense" | "income_active" | "income_passive";
+                        name: string;
+                        necessity: ("essential" | "moderate" | "non_essential") | null;
+                        icon: string | null;
+                        /** Format: date-time */
+                        clientUpdatedAt: string;
+                        deleted: boolean;
+                    }[];
+                    /** @default [] */
+                    transactions?: {
+                        /** Format: uuid */
+                        clientId: string;
+                        /** @enum {string} */
+                        type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
+                        amountMinor: number;
+                        /** @enum {string} */
+                        currency: "UZS" | "USD";
+                        category: (string) | null;
+                        necessity: ("essential" | "moderate" | "non_essential") | null;
+                        occurredOn: string;
+                        note: string | null;
+                        /** @enum {string} */
+                        source: "manual" | "voice";
+                        /** Format: date-time */
+                        clientUpdatedAt: string;
+                        deleted: boolean;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        cursor: string;
+                        hasMore: boolean;
+                        accepted: {
+                            categories: string[];
+                            transactions: string[];
+                        };
+                        rejected: {
+                            /** @enum {string} */
+                            entity: "category" | "transaction";
+                            /** Format: uuid */
+                            clientId: string;
+                            code: string;
+                        }[];
+                        changes: {
+                            categories: {
+                                /** Format: uuid */
+                                clientId: string;
+                                /** @enum {string} */
+                                kind: "expense" | "income_active" | "income_passive";
+                                name: string;
+                                necessity: ("essential" | "moderate" | "non_essential") | null;
+                                icon: string | null;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
+                            }[];
+                            transactions: {
+                                /** Format: uuid */
+                                clientId: string;
+                                /** @enum {string} */
+                                type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
+                                amountMinor: number;
+                                /** @enum {string} */
+                                currency: "UZS" | "USD";
+                                category: (string) | null;
+                                necessity: ("essential" | "moderate" | "non_essential") | null;
+                                occurredOn: string;
+                                note: string | null;
+                                /** @enum {string} */
+                                source: "manual" | "voice";
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
+                            }[];
+                        };
+                    };
                 };
             };
         };
