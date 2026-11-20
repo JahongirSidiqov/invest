@@ -1,16 +1,12 @@
 import { createApiClient } from '@invest/api-client';
 import type { TokenPair } from '@invest/shared';
+import { API_URL } from '../config';
 import { secure } from '../state/secure';
 import { useSession } from '../state/session';
 
-/**
- * Set EXPO_PUBLIC_API_URL to the API on your network, e.g. http://192.168.1.10:3000.
- * A phone cannot reach "localhost" on the computer.
- */
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
-
+/** In local mode (no API_URL) nothing calls the API; see src/config.ts. */
 export const api = createApiClient({
-  baseUrl: API_URL,
+  baseUrl: API_URL ?? 'http://localhost:3000',
   getAccessToken: () => useSession.getState().accessToken,
 });
 

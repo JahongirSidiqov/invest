@@ -71,49 +71,60 @@ export const categoryRefSchema = z.union([
   z.string().refine((s) => DEFAULT_CATEGORY_SLUGS.has(s), 'unknown_category'),
 ]);
 
+const syncMeta = {
+  clientId: z.uuid(),
+  clientUpdatedAt: z.iso.datetime(),
+  deleted: z.boolean(),
+};
+
+const amount = z.number().int().positive().max(MAX_AMOUNT_MINOR);
+const amountOrZero = z.number().int().min(0).max(MAX_AMOUNT_MINOR);
+
 export const syncTransactionSchema = z
   .object({
-    clientId: z.uuid(),
+    ...syncMeta,
     type: z.enum(TRANSACTION_TYPES),
-    amountMinor: z.number().int().positive().max(MAX_AMOUNT_MINOR),
+    amountMinor: amount,
     currency: z.enum(CURRENCIES),
     category: categoryRefSchema.nullable(),
     necessity: z.enum(NECESSITY).nullable(),
+    /** Client id of the asset an investment goes into or a dividend comes from. */
+    asset: z.uuid().nullable(),
+    /** Dividends only: true when reinvested into the asset instead of paid out. */
+    capitalised: z.boolean().nullable(),
     occurredOn: isoDate,
     note: z.string().max(200).nullable(),
     source: z.enum(['manual', 'voice']),
-    clientUpdatedAt: z.iso.datetime(),
-    deleted: z.boolean(),
   })
   .superRefine((t, ctx) => {
     if (t.deleted) return;
-    if (t.type === 'expense' && !t.necessity) {
-      ctx.addIssue({ code: 'custom', path: ['necessity'], message: 'necessity_required' });
-    }
-    if (t.type !== 'expense' && t.necessity) {
-      ctx.addIssue({ code: 'custom', path: ['necessity'], message: 'necessity_only_for_expense' });
-    }
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: 'custom', path: [path], message });
+    if (t.type === 'expense' && !t.necessity) issue('necessity', 'necessity_required');
+    if (t.type !== 'expense' && t.necessity) issue('necessity', 'necessity_only_for_expense');
     const needsCategory =
       t.type === 'expense' || t.type === 'income_active' || t.type === 'income_passive';
-    if (needsCategory && !t.category) {
-      ctx.addIssue({ code: 'custom', path: ['category'], message: 'category_required' });
-    }
+    if (needsCategory && !t.category) issue('category', 'category_required');
+    if (!needsCategory && t.category) issue('category', 'category_not_allowed');
     const builtIn = t.category ? defaultCategory(t.category) : undefined;
-    if (builtIn && builtIn.kind !== t.type) {
-      ctx.addIssue({ code: 'custom', path: ['category'], message: 'category_kind_mismatch' });
-    }
+    if (builtIn && builtIn.kind !== t.type) issue('category', 'category_kind_mismatch');
+    const needsAsset = t.type === 'investment' || t.type === 'dividend';
+    if (needsAsset && !t.asset) issue('asset', 'asset_required');
+    if (!needsAsset && t.asset) issue('asset', 'asset_not_allowed');
+    if (t.type === 'dividend' && t.capitalised === null)
+      issue('capitalised', 'capitalised_required');
+    if (t.type !== 'dividend' && t.capitalised !== null)
+      issue('capitalised', 'capitalised_only_for_dividend');
   });
 export type SyncTransaction = z.infer<typeof syncTransactionSchema>;
 
 export const syncCategorySchema = z
   .object({
-    clientId: z.uuid(),
+    ...syncMeta,
     kind: z.enum(CATEGORY_KINDS),
     name: z.string().trim().min(1).max(40),
     necessity: z.enum(NECESSITY).nullable(),
     icon: z.string().max(40).nullable(),
-    clientUpdatedAt: z.iso.datetime(),
-    deleted: z.boolean(),
   })
   .superRefine((c, ctx) => {
     if (c.kind === 'expense' && !c.necessity) {
@@ -125,22 +136,118 @@ export const syncCategorySchema = z
   });
 export type SyncCategory = z.infer<typeof syncCategorySchema>;
 
+export const ASSET_TYPES = [
+  'iman',
+  'asaxiy',
+  'way2',
+  'gold',
+  'foreign_shares',
+  'livestock',
+  'bank_deposit',
+  'card',
+  'cash',
+  'other',
+] as const;
+export type AssetType = (typeof ASSET_TYPES)[number];
+
+/** Liquid by default (counts towards savings L); the user can change it per asset. */
+export const LIQUID_BY_DEFAULT: ReadonlySet<AssetType> = new Set(['card', 'cash', 'bank_deposit']);
+
+export const DIVIDEND_METHODS = ['withdraw', 'capitalise'] as const;
+export type DividendMethod = (typeof DIVIDEND_METHODS)[number];
+
+export const syncAssetSchema = z.object({
+  ...syncMeta,
+  type: z.enum(ASSET_TYPES),
+  name: z.string().trim().min(1).max(60),
+  liquid: z.boolean(),
+  /** Default for new dividends from this asset; null for assets without dividends. */
+  dividendMethod: z.enum(DIVIDEND_METHODS).nullable(),
+  /** Money put in before the user started recording investment transactions. */
+  openingInvestedMinor: amountOrZero,
+  openedOn: isoDate,
+  note: z.string().max(200).nullable(),
+});
+export type SyncAsset = z.infer<typeof syncAssetSchema>;
+
+/** A dated current value of an asset, entered by the user. History gives net worth over time. */
+export const syncValuationSchema = z.object({
+  ...syncMeta,
+  asset: z.uuid(),
+  valueMinor: amountOrZero,
+  valuedOn: isoDate,
+});
+export type SyncValuation = z.infer<typeof syncValuationSchema>;
+
+export const LIABILITY_KINDS = ['bank_loan', 'nasiya', 'personal', 'other'] as const;
+
+export const syncLiabilitySchema = z.object({
+  ...syncMeta,
+  kind: z.enum(LIABILITY_KINDS),
+  name: z.string().trim().min(1).max(60),
+  balanceMinor: amountOrZero,
+  note: z.string().max(200).nullable(),
+});
+export type SyncLiability = z.infer<typeof syncLiabilitySchema>;
+
+/**
+ * Syncable entity types, in dependency order: referenced rows (categories, assets)
+ * come before the rows that reference them.
+ */
+export const SYNC_ENTITIES = [
+  'category',
+  'asset',
+  'liability',
+  'valuation',
+  'transaction',
+] as const;
+export type SyncEntity = (typeof SYNC_ENTITIES)[number];
+
+export interface SyncRecordMap {
+  category: SyncCategory;
+  asset: SyncAsset;
+  liability: SyncLiability;
+  valuation: SyncValuation;
+  transaction: SyncTransaction;
+}
+
+export type SyncChanges = { [E in SyncEntity]: SyncRecordMap[E][] };
+
+export const SYNC_SCHEMAS = {
+  category: syncCategorySchema,
+  asset: syncAssetSchema,
+  liability: syncLiabilitySchema,
+  valuation: syncValuationSchema,
+  transaction: syncTransactionSchema,
+} as const;
+
+export function emptyChanges(): SyncChanges {
+  return { category: [], asset: [], liability: [], valuation: [], transaction: [] };
+}
+
 export const SYNC_MAX_BATCH = 500;
 
 export const syncRequestSchema = z
   .object({
     /** Opaque cursor from the previous response; null on first sync. */
     cursor: z.string().regex(/^\d+$/).nullable(),
-    categories: z.array(syncCategorySchema).default([]),
-    transactions: z.array(syncTransactionSchema).default([]),
+    changes: z
+      .object({
+        category: z.array(syncCategorySchema).default([]),
+        asset: z.array(syncAssetSchema).default([]),
+        liability: z.array(syncLiabilitySchema).default([]),
+        valuation: z.array(syncValuationSchema).default([]),
+        transaction: z.array(syncTransactionSchema).default([]),
+      })
+      .default(emptyChanges),
   })
-  .refine((r) => r.categories.length + r.transactions.length <= SYNC_MAX_BATCH, {
+  .refine((r) => SYNC_ENTITIES.reduce((n, e) => n + r.changes[e].length, 0) <= SYNC_MAX_BATCH, {
     message: 'batch_too_large',
   });
-export type SyncRequest = z.input<typeof syncRequestSchema>;
+export type SyncRequest = { cursor: string | null; changes: Partial<SyncChanges> };
 
 export interface SyncRejection {
-  entity: 'category' | 'transaction';
+  entity: SyncEntity;
   clientId: string;
   code: string;
 }
@@ -148,9 +255,9 @@ export interface SyncRejection {
 export interface SyncResponse {
   cursor: string;
   hasMore: boolean;
-  accepted: { categories: string[]; transactions: string[] };
+  accepted: { [E in SyncEntity]: string[] };
   rejected: SyncRejection[];
-  changes: { categories: SyncCategory[]; transactions: SyncTransaction[] };
+  changes: SyncChanges;
 }
 
 export const DEFAULT_RESERVE_MINOR = 100_000_000; // 1 000 000 so'm

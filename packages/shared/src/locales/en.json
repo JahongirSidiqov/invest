@@ -50,7 +50,8 @@
     "biometricLater": "Not now",
     "biometricPrompt": "Unlock the app",
     "useBiometric": "Use biometrics",
-    "delete": "Delete"
+    "delete": "Delete",
+    "lockedFor": "Too many errors. Try again in {{minutes}} min."
   },
   "onboarding": {
     "progress": "Question {{current}} of {{total}}",
@@ -143,8 +144,11 @@
     "offlineSaved": "Saved. It will be sent when you are online.",
     "errors": {
       "amount": "Enter an amount",
-      "category": "Choose a category"
-    }
+      "category": "Choose a category",
+      "asset": "Choose an asset"
+    },
+    "asset": "Asset",
+    "capitalised": "Dividend reinvested"
   },
   "history": {
     "title": "History",
@@ -160,6 +164,87 @@
     "title": "Settings",
     "reserve": "Minimum balance on the card",
     "reserveHint": "Anything above it counts as “money waiting to be invested”.",
-    "saved": "Saved"
+    "saved": "Saved",
+    "signOut": "Sign out and delete data"
+  },
+  "assetTypes": {
+    "iman": "Iman",
+    "asaxiy": "Asaxiy",
+    "way2": "Way2",
+    "gold": "Gold",
+    "foreign_shares": "Foreign shares",
+    "livestock": "Livestock",
+    "bank_deposit": "Bank deposit",
+    "card": "Card",
+    "cash": "Cash",
+    "other": "Other"
+  },
+  "liabilityKinds": {
+    "bank_loan": "Bank loan",
+    "nasiya": "Nasiya",
+    "personal": "Personal debt",
+    "other": "Other"
+  },
+  "assets": {
+    "title": "Assets",
+    "netWorth": "Net worth",
+    "liquid": "Liquid",
+    "invested": "Invested",
+    "debts": "Debts",
+    "waiting": "Waiting to be invested",
+    "empty": "No assets yet. Add your card, cash, Iman, Asaxiy or gold.",
+    "add": "Add asset",
+    "addDebt": "Add debt",
+    "edit": "Edit asset",
+    "type": "Type",
+    "name": "Name",
+    "currentValue": "Current value",
+    "openingInvested": "Amount invested",
+    "openingHint": "How much you put in before you started tracking. Leave empty to use the current value.",
+    "liquidToggle": "Liquid (can be cashed quickly)",
+    "dividendMethod": "Dividends",
+    "methods": {
+      "withdraw": "Paid to card",
+      "capitalise": "Reinvested"
+    },
+    "balance": "Balance owed",
+    "investedShort": "invested",
+    "errors": {
+      "value": "Enter the current value"
+    }
+  },
+  "stage": {
+    "title": "Your stage",
+    "names": {
+      "1": "Financial risk",
+      "2": "Financial security",
+      "3": "Financial stability",
+      "4": "Financial independence",
+      "5": "Financial freedom"
+    },
+    "provisional": "Provisional",
+    "provisionalHint": "{{count}} more months of data needed for a final stage.",
+    "noData": "Enter your average monthly spending to see your stage.",
+    "needSavings": "Savings needed for the next stage: {{amount}} sum",
+    "needPassiveSource": "You need a passive income source (dividends or rent).",
+    "needMonthly": "Passive income missing per month: {{amount}} sum",
+    "done": "You are at the top stage."
+  },
+  "kpi": {
+    "netWorth": "Net worth",
+    "savingsRate": "Savings rate",
+    "emergency": "Reserve",
+    "emergencyValue": "{{value}} months",
+    "passive": "Passive coverage",
+    "investShare": "Investment share",
+    "month": "This month",
+    "income": "Income",
+    "expense": "Spending"
+  },
+  "onboardingMoney": {
+    "title": "About your money",
+    "subtitle": "For a provisional stage. It becomes exact from your real records.",
+    "savings": "Savings now (card, cash, deposit)",
+    "spending": "Average monthly spending"
   }
 }

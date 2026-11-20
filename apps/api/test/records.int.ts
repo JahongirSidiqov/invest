@@ -24,6 +24,8 @@ function expense(overrides: Record<string, unknown> = {}) {
     currency: 'UZS',
     category: 'food',
     necessity: 'essential',
+    asset: null,
+    capitalised: null,
     occurredOn: '2026-11-18',
     note: 'Tushlik',
     source: 'manual',
@@ -33,12 +35,27 @@ function expense(overrides: Record<string, unknown> = {}) {
   };
 }
 
+/** Accepts { cursor, categories, transactions, assets, valuations, liabilities } for brevity. */
 function sync(token: string, body: Record<string, unknown>, key: string = randomUUID()) {
+  const { cursor, categories, transactions, assets, valuations, liabilities } = body as Record<
+    string,
+    unknown[] | undefined
+  >;
+  const payload = {
+    cursor,
+    changes: {
+      category: categories ?? [],
+      asset: assets ?? [],
+      liability: liabilities ?? [],
+      valuation: valuations ?? [],
+      transaction: transactions ?? [],
+    },
+  };
   return request(app.getHttpServer())
     .post('/v1/sync')
     .set('Authorization', `Bearer ${token}`)
     .set('Idempotency-Key', key)
-    .send(body);
+    .send(payload);
 }
 
 beforeAll(async () => {
@@ -57,14 +74,14 @@ describe('POST /v1/sync', () => {
     const { token } = await login('+998901234567');
     const t = expense();
     const res = await sync(token, { cursor: null, transactions: [t] }).expect(200);
-    expect(res.body.accepted.transactions).toEqual([t.clientId]);
+    expect(res.body.accepted.transaction).toEqual([t.clientId]);
     expect(res.body.rejected).toEqual([]);
-    expect(res.body.changes.transactions).toEqual([t]);
+    expect(res.body.changes.transaction).toEqual([t]);
     expect(Number(res.body.cursor)).toBeGreaterThan(0);
 
     // Nothing new after the cursor.
     const again = await sync(token, { cursor: res.body.cursor }).expect(200);
-    expect(again.body.changes.transactions).toEqual([]);
+    expect(again.body.changes.transaction).toEqual([]);
     expect(again.body.cursor).toBe(res.body.cursor);
   });
 
@@ -89,8 +106,8 @@ describe('POST /v1/sync', () => {
       cursor: null,
       transactions: [{ ...t, amountMinor: 1_000_000, clientUpdatedAt: '2026-11-18T08:30:00.000Z' }],
     }).expect(200);
-    expect(res.body.accepted.transactions).toEqual([t.clientId]);
-    expect(res.body.changes.transactions[0].amountMinor).toBe(5_000_000);
+    expect(res.body.accepted.transaction).toEqual([t.clientId]);
+    expect(res.body.changes.transaction[0].amountMinor).toBe(5_000_000);
   });
 
   it('propagates deletes as tombstones', async () => {
@@ -101,7 +118,7 @@ describe('POST /v1/sync', () => {
       cursor: first.body.cursor,
       transactions: [{ ...t, deleted: true, clientUpdatedAt: '2026-11-18T10:00:00.000Z' }],
     }).expect(200);
-    expect(del.body.changes.transactions).toEqual([
+    expect(del.body.changes.transaction).toEqual([
       expect.objectContaining({ clientId: t.clientId, deleted: true }),
     ]);
 
@@ -116,7 +133,7 @@ describe('POST /v1/sync', () => {
     const { token, userId } = await login('+998901234567');
     const t = expense({ deleted: true });
     const res = await sync(token, { cursor: null, transactions: [t] }).expect(200);
-    expect(res.body.accepted.transactions).toEqual([t.clientId]);
+    expect(res.body.accepted.transaction).toEqual([t.clientId]);
     expect(await ownerQuery('SELECT 1 FROM transactions WHERE user_id = $1', [userId])).toEqual([]);
   });
 
@@ -138,8 +155,8 @@ describe('POST /v1/sync', () => {
       categories: [sport],
       transactions: [ok, unknown],
     }).expect(200);
-    expect(res.body.accepted.categories).toEqual([sport.clientId]);
-    expect(res.body.accepted.transactions).toEqual([ok.clientId]);
+    expect(res.body.accepted.category).toEqual([sport.clientId]);
+    expect(res.body.accepted.transaction).toEqual([ok.clientId]);
     expect(res.body.rejected).toEqual([
       { entity: 'transaction', clientId: unknown.clientId, code: 'unknown_category' },
     ]);
@@ -173,7 +190,7 @@ describe('POST /v1/sync', () => {
     }).expect(200);
     expect(res.body.rejected[0].code).toBe('unknown_category');
     // B's pull never contains A's rows.
-    expect(res.body.changes.categories).toEqual([]);
+    expect(res.body.changes.category).toEqual([]);
   });
 
   it('pages large pulls with hasMore', async () => {
@@ -185,10 +202,10 @@ describe('POST /v1/sync', () => {
     await sync(token, { cursor: null, transactions: [expense()] }).expect(200);
 
     const first = await sync(token, { cursor: null }).expect(200);
-    expect(first.body.changes.transactions).toHaveLength(500);
+    expect(first.body.changes.transaction).toHaveLength(500);
     expect(first.body.hasMore).toBe(true);
     const second = await sync(token, { cursor: first.body.cursor }).expect(200);
-    expect(second.body.changes.transactions).toHaveLength(1);
+    expect(second.body.changes.transaction).toHaveLength(1);
     expect(second.body.hasMore).toBe(false);
   });
 
@@ -280,5 +297,130 @@ describe('settings and history', () => {
       .expect(200);
     expect(range.body.items).toHaveLength(1);
     expect(range.body.items[0].type).toBe('income_active');
+  });
+});
+
+describe('assets, valuations and liabilities', () => {
+  function asset(overrides: Record<string, unknown> = {}) {
+    return {
+      clientId: randomUUID(),
+      type: 'asaxiy',
+      name: 'Asaxiy',
+      liquid: false,
+      dividendMethod: 'withdraw',
+      openingInvestedMinor: 2_000_000_000,
+      openedOn: '2026-02-01',
+      note: null,
+      clientUpdatedAt: '2026-11-18T08:00:00.000Z',
+      deleted: false,
+      ...overrides,
+    };
+  }
+
+  it('syncs assets with linked investments, dividends and valuations', async () => {
+    const { token } = await login('+998901234567');
+    const a = asset();
+    const card = asset({
+      type: 'card',
+      name: 'Humo',
+      liquid: true,
+      dividendMethod: null,
+      openingInvestedMinor: 300_000_000,
+    });
+    const valuation = {
+      clientId: randomUUID(),
+      asset: a.clientId,
+      valueMinor: 2_050_000_000,
+      valuedOn: '2026-10-31',
+      clientUpdatedAt: '2026-11-18T08:00:00.000Z',
+      deleted: false,
+    };
+    const invest = expense({
+      type: 'investment',
+      category: null,
+      necessity: null,
+      asset: a.clientId,
+      amountMinor: 100_000_000,
+      occurredOn: '2026-11-05',
+    });
+    const dividend = expense({
+      type: 'dividend',
+      category: null,
+      necessity: null,
+      asset: a.clientId,
+      capitalised: false,
+      amountMinor: 60_000_000,
+      occurredOn: '2026-11-10',
+    });
+    const debt = {
+      clientId: randomUUID(),
+      kind: 'nasiya',
+      name: 'Telefon',
+      balanceMinor: 400_000_000,
+      note: null,
+      clientUpdatedAt: '2026-11-18T08:00:00.000Z',
+      deleted: false,
+    };
+
+    const res = await sync(token, {
+      cursor: null,
+      assets: [a, card],
+      valuations: [valuation],
+      liabilities: [debt],
+      transactions: [invest, dividend],
+    }).expect(200);
+    expect(res.body.rejected).toEqual([]);
+    expect(res.body.changes.asset).toHaveLength(2);
+    expect(res.body.changes.valuation).toEqual([valuation]);
+    expect(res.body.changes.liability).toEqual([debt]);
+
+    const wealth = await request(app.getHttpServer())
+      .get('/v1/assets')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const pos = wealth.body.positions.find(
+      (p: { asset: { clientId: string } }) => p.asset.clientId === a.clientId,
+    );
+    expect(pos).toMatchObject({
+      currentValueMinor: 2_150_000_000,
+      investedMinor: 2_100_000_000,
+      withdrawnDividendsMinor: 60_000_000,
+      gainMinor: 110_000_000,
+    });
+    expect(wealth.body.summary).toEqual({
+      liquidMinor: 300_000_000,
+      productiveMinor: 2_150_000_000,
+      liabilitiesMinor: 400_000_000,
+      netWorthMinor: 2_050_000_000,
+      waitingToInvestMinor: 200_000_000,
+    });
+  });
+
+  it('rejects references to unknown or foreign assets', async () => {
+    const a = await login('+998901234567');
+    const b = await login('+998931112233');
+    const own = asset();
+    await sync(a.token, { cursor: null, assets: [own] }).expect(200);
+    const res = await sync(b.token, {
+      cursor: null,
+      transactions: [
+        expense({ type: 'investment', category: null, necessity: null, asset: own.clientId }),
+      ],
+      valuations: [
+        {
+          clientId: randomUUID(),
+          asset: own.clientId,
+          valueMinor: 1,
+          valuedOn: '2026-11-18',
+          clientUpdatedAt: '2026-11-18T08:00:00.000Z',
+          deleted: false,
+        },
+      ],
+    }).expect(200);
+    expect(res.body.rejected.map((r: { code: string }) => r.code)).toEqual([
+      'unknown_asset',
+      'unknown_asset',
+    ]);
+    expect(res.body.changes.asset).toEqual([]);
   });
 });

@@ -50,7 +50,8 @@
     "biometricLater": "Hozir emas",
     "biometricPrompt": "Ilovaga kirish",
     "useBiometric": "Biometriya bilan kirish",
-    "delete": "Oʻchirish"
+    "delete": "Oʻchirish",
+    "lockedFor": "Juda koʻp xato. {{minutes}} daqiqadan keyin urinib koʻring."
   },
   "onboarding": {
     "progress": "{{total}} savoldan {{current}}-savol",
@@ -143,8 +144,11 @@
     "offlineSaved": "Saqlandi. Internet boʻlganda yuboriladi.",
     "errors": {
       "amount": "Summani kiriting",
-      "category": "Kategoriyani tanlang"
-    }
+      "category": "Kategoriyani tanlang",
+      "asset": "Aktivni tanlang"
+    },
+    "asset": "Aktiv",
+    "capitalised": "Dividend qayta investitsiya qilindi"
   },
   "history": {
     "title": "Tarix",
@@ -160,6 +164,87 @@
     "title": "Sozlamalar",
     "reserve": "Kartadagi minimal zaxira",
     "reserveHint": "Bundan ortigʻi “investitsiyaga yigʻilayotgan pul” deb hisoblanadi.",
-    "saved": "Saqlandi"
+    "saved": "Saqlandi",
+    "signOut": "Chiqish va maʼlumotlarni oʻchirish"
+  },
+  "assetTypes": {
+    "iman": "Iman",
+    "asaxiy": "Asaxiy",
+    "way2": "Way2",
+    "gold": "Oltin",
+    "foreign_shares": "Xorijiy aksiyalar",
+    "livestock": "Qoʻychilik",
+    "bank_deposit": "Bank depoziti",
+    "card": "Karta",
+    "cash": "Naqd pul",
+    "other": "Boshqa"
+  },
+  "liabilityKinds": {
+    "bank_loan": "Bank krediti",
+    "nasiya": "Nasiya",
+    "personal": "Shaxsiy qarz",
+    "other": "Boshqa"
+  },
+  "assets": {
+    "title": "Aktivlar",
+    "netWorth": "Sof boylik",
+    "liquid": "Likvid",
+    "invested": "Investitsiya",
+    "debts": "Qarzlar",
+    "waiting": "Investitsiyaga kutayotgan pul",
+    "empty": "Hali aktiv yoʻq. Karta, naqd pul, Iman, Asaxiy yoki oltinni qoʻshing.",
+    "add": "Aktiv qoʻshish",
+    "addDebt": "Qarz qoʻshish",
+    "edit": "Aktivni tahrirlash",
+    "type": "Turi",
+    "name": "Nomi",
+    "currentValue": "Hozirgi qiymati",
+    "openingInvested": "Kiritilgan summa",
+    "openingHint": "Ilovadan oldin qancha pul qoʻygansiz. Boʻsh qoldirsangiz, hozirgi qiymat olinadi.",
+    "liquidToggle": "Likvid (tez naqdlashtirish mumkin)",
+    "dividendMethod": "Dividend",
+    "methods": {
+      "withdraw": "Kartaga yechiladi",
+      "capitalise": "Kapitallashadi"
+    },
+    "balance": "Qolgan qarz",
+    "investedShort": "kiritilgan",
+    "errors": {
+      "value": "Hozirgi qiymatni kiriting"
+    }
+  },
+  "stage": {
+    "title": "Bosqichingiz",
+    "names": {
+      "1": "Moliyaviy xavf",
+      "2": "Moliyaviy xavfsizlik",
+      "3": "Moliyaviy barqarorlik",
+      "4": "Moliyaviy mustaqillik",
+      "5": "Moliyaviy erkinlik"
+    },
+    "provisional": "Taxminiy",
+    "provisionalHint": "Aniq bosqich uchun yana {{count}} oylik maʼlumot kerak.",
+    "noData": "Bosqichni aniqlash uchun oʻrtacha oylik xarajatingizni kiriting.",
+    "needSavings": "Keyingi bosqichgacha jamgʻarma: {{amount}} soʻm",
+    "needPassiveSource": "Passiv daromad manbai kerak (dividend yoki ijara).",
+    "needMonthly": "Oyiga yetishmayotgan passiv daromad: {{amount}} soʻm",
+    "done": "Siz eng yuqori bosqichdasiz."
+  },
+  "kpi": {
+    "netWorth": "Sof boylik",
+    "savingsRate": "Jamgʻarma ulushi",
+    "emergency": "Zaxira",
+    "emergencyValue": "{{value}} oy",
+    "passive": "Passiv qoplama",
+    "investShare": "Investitsiya ulushi",
+    "month": "Shu oy",
+    "income": "Daromad",
+    "expense": "Xarajat"
+  },
+  "onboardingMoney": {
+    "title": "Pulingiz haqida",
+    "subtitle": "Taxminiy bosqichni hisoblash uchun. Keyin haqiqiy yozuvlar asosida aniqlanadi.",
+    "savings": "Hozirgi jamgʻarmangiz (karta, naqd, depozit)",
+    "spending": "Oʻrtacha oylik xarajatingiz"
   }
 }

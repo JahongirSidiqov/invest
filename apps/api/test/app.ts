@@ -30,7 +30,7 @@ export async function resetState(): Promise<void> {
   const pg = new Client({ connectionString: process.env.DATABASE_URL });
   await pg.connect();
   await pg.query(
-    'TRUNCATE users, devices, refresh_tokens, consents, audit_logs, user_settings, categories, transactions RESTART IDENTITY CASCADE',
+    'TRUNCATE users, devices, refresh_tokens, consents, audit_logs, user_settings, categories, transactions, assets, asset_valuations, liabilities RESTART IDENTITY CASCADE',
   );
   await pg.end();
   const redis = new Redis(process.env.REDIS_URL!);

@@ -36,3 +36,17 @@ export async function checkPin(pin: string): Promise<PinCheck> {
   await secure.set('pinAttempts', String(attempts));
   return { ok: false, attemptsLeft: Math.max(PIN_MAX_ATTEMPTS - attempts, 0) };
 }
+
+export const PIN_LOCKOUT_MS = 5 * 60 * 1000;
+
+/** Local mode has no SMS fallback, so too many wrong PINs pause entry instead of wiping data. */
+export async function startLockout(now = Date.now()): Promise<void> {
+  await secure.set('pinLockedUntil', String(now + PIN_LOCKOUT_MS));
+  await secure.set('pinAttempts', '0');
+}
+
+/** Milliseconds until PIN entry is allowed again; 0 when not locked out. */
+export async function lockoutRemaining(now = Date.now()): Promise<number> {
+  const until = Number((await secure.get('pinLockedUntil')) ?? '0');
+  return Math.max(until - now, 0);
+}

@@ -9,6 +9,7 @@ const KEYS = {
   biometric: 'biometric_enabled',
   locale: 'locale',
   dbKey: 'db_key',
+  pinLockedUntil: 'pin_locked_until',
 } as const;
 
 type Key = keyof typeof KEYS;
@@ -23,9 +24,16 @@ export const secure = {
   remove: (key: Key) => SecureStore.deleteItemAsync(KEYS[key], options),
   async clearSession() {
     await Promise.all(
-      (['refreshToken', 'pinHash', 'pinSalt', 'pinAttempts', 'biometric'] as const).map((k) =>
-        SecureStore.deleteItemAsync(KEYS[k], options),
-      ),
+      (
+        [
+          'refreshToken',
+          'pinHash',
+          'pinSalt',
+          'pinAttempts',
+          'pinLockedUntil',
+          'biometric',
+        ] as const
+      ).map((k) => SecureStore.deleteItemAsync(KEYS[k], options)),
     );
   },
 };

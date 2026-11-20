@@ -85,6 +85,9 @@ export default function RootLayout() {
             <Stack.Screen name="entry" options={{ presentation: 'modal' }} />
             <Stack.Screen name="history" />
             <Stack.Screen name="settings" />
+            <Stack.Screen name="assets" />
+            <Stack.Screen name="asset-form" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="liability-form" options={{ presentation: 'modal' }} />
           </Stack.Protected>
         </Stack>
         <RecordsBridge enabled={stage === 'ready'} />

@@ -3,6 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { api } from '../src/api';
+import { LOCAL_MODE } from '../src/config';
+import { Label, SumInput } from '../src/components/form';
+import { getStore } from '../src/records';
+import { parseSumInput } from '../src/records/format';
 import {
   Button,
   ErrorText,
@@ -35,17 +39,33 @@ export default function Onboarding() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const question = QUESTIONS[index]!;
-  const selected = answers[question.field];
+  const [savings, setSavings] = useState('');
+  const [spending, setSpending] = useState('');
+  const steps = QUESTIONS.length + 1; // the last step asks about money for the provisional stage
+  const question = QUESTIONS[index];
+  const selected = question ? answers[question.field] : null;
 
   async function next() {
-    if (index < QUESTIONS.length - 1) return setIndex(index + 1);
+    if (index < steps - 1) return setIndex(index + 1);
     setBusy(true);
     setError(null);
     try {
-      const { data } = await api.PUT('/v1/me/onboarding', { body: answers as never });
-      if (data) onboarded();
-      else setError(t('common.error'));
+      // Answers are kept on the phone too, so the provisional stage works offline.
+      const store = await getStore();
+      await store.setMeta(
+        'onboarding',
+        JSON.stringify({
+          ...answers,
+          savingsMinor: savings ? parseSumInput(savings) : null,
+          spendingMinor: spending ? parseSumInput(spending) : null,
+        }),
+      );
+      if (!LOCAL_MODE) {
+        const { data } = await api.PUT('/v1/me/onboarding', { body: answers as never });
+        if (!data) return setError(t('common.error'));
+      }
+      await store.setMeta('onboarded', '1');
+      onboarded();
     } catch {
       setError(t('common.offline'));
     } finally {
@@ -73,7 +93,7 @@ export default function Onboarding() {
           style={{ opacity: index === 0 ? 0 : 1 }}
         />
         <Text style={[text.label, { color: theme.textSecondary }]}>
-          {t('onboarding.progress', { current: index + 1, total: QUESTIONS.length })}
+          {t('onboarding.progress', { current: index + 1, total: steps })}
         </Text>
         <Text accessibilityRole="button" onPress={next} style={[text.label, styles.skip]}>
           {t('common.skip')}
@@ -81,24 +101,47 @@ export default function Onboarding() {
       </View>
 
       <View style={styles.progress}>
-        {QUESTIONS.map((q, i) => (
-          <View key={q.key} style={[styles.bar, i <= index && styles.barActive]} />
+        {Array.from({ length: steps }, (_, i) => (
+          <View key={i} style={[styles.bar, i <= index && styles.barActive]} />
         ))}
       </View>
 
-      <Title>{t(`onboarding.${question.key}.title`)}</Title>
-      <Subtitle>{t(`onboarding.${question.key}.subtitle`)}</Subtitle>
+      {question ? (
+        <>
+          <Title>{t(`onboarding.${question.key}.title`)}</Title>
+          <Subtitle>{t(`onboarding.${question.key}.subtitle`)}</Subtitle>
 
-      <View style={{ gap: space.sm }} accessibilityRole="radiogroup">
-        {question.options.map((option) => (
-          <OptionCard
-            key={option}
-            label={t(`onboarding.${question.key}.${option}`)}
-            selected={selected === option}
-            onPress={() => setAnswers({ ...answers, [question.field]: option })}
+          <View style={{ gap: space.sm }} accessibilityRole="radiogroup">
+            {question.options.map((option) => (
+              <OptionCard
+                key={option}
+                label={t(`onboarding.${question.key}.${option}`)}
+                selected={selected === option}
+                onPress={() => setAnswers({ ...answers, [question.field]: option })}
+              />
+            ))}
+          </View>
+        </>
+      ) : (
+        <>
+          <Title>{t('onboardingMoney.title')}</Title>
+          <Subtitle>{t('onboardingMoney.subtitle')}</Subtitle>
+          <Label>{t('onboardingMoney.savings')}</Label>
+          <SumInput
+            label={t('onboardingMoney.savings')}
+            value={savings}
+            onChange={setSavings}
+            unit={t('common.sum')}
           />
-        ))}
-      </View>
+          <Label>{t('onboardingMoney.spending')}</Label>
+          <SumInput
+            label={t('onboardingMoney.spending')}
+            value={spending}
+            onChange={setSpending}
+            unit={t('common.sum')}
+          />
+        </>
+      )}
     </Screen>
   );
 }

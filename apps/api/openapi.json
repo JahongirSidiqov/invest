@@ -1009,6 +1009,14 @@
                             "format": "uuid",
                             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           },
+                          "clientUpdatedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "deleted": {
+                            "type": "boolean"
+                          },
                           "type": {
                             "type": "string",
                             "enum": [
@@ -1065,6 +1073,24 @@
                               }
                             ]
                           },
+                          "asset": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "capitalised": {
+                            "type": [
+                              "boolean",
+                              "null"
+                            ]
+                          },
                           "occurredOn": {
                             "type": "string",
                             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -1086,28 +1112,22 @@
                               "manual",
                               "voice"
                             ]
-                          },
-                          "clientUpdatedAt": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                          },
-                          "deleted": {
-                            "type": "boolean"
                           }
                         },
                         "required": [
                           "clientId",
+                          "clientUpdatedAt",
+                          "deleted",
                           "type",
                           "amountMinor",
                           "currency",
                           "category",
                           "necessity",
+                          "asset",
+                          "capitalised",
                           "occurredOn",
                           "note",
-                          "source",
-                          "clientUpdatedAt",
-                          "deleted"
+                          "source"
                         ],
                         "additionalProperties": false
                       }
@@ -1122,6 +1142,220 @@
                   "required": [
                     "items",
                     "nextCursor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "records"
+        ]
+      }
+    },
+    "/v1/assets": {
+      "get": {
+        "operationId": "RecordsController_wealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "asset": {
+                            "type": "object",
+                            "properties": {
+                              "clientId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "iman",
+                                  "asaxiy",
+                                  "way2",
+                                  "gold",
+                                  "foreign_shares",
+                                  "livestock",
+                                  "bank_deposit",
+                                  "card",
+                                  "cash",
+                                  "other"
+                                ]
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              },
+                              "liquid": {
+                                "type": "boolean"
+                              },
+                              "dividendMethod": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "withdraw",
+                                      "capitalise"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "openingInvestedMinor": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000000000000
+                              },
+                              "openedOn": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              "note": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
+                              "type",
+                              "name",
+                              "liquid",
+                              "dividendMethod",
+                              "openingInvestedMinor",
+                              "openedOn",
+                              "note"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "currentValueMinor": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "valuedOn": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "investedMinor": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "withdrawnDividendsMinor": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "capitalisedDividendsMinor": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "gainMinor": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "roi": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "asset",
+                          "currentValueMinor",
+                          "valuedOn",
+                          "investedMinor",
+                          "withdrawnDividendsMinor",
+                          "capitalisedDividendsMinor",
+                          "gainMinor",
+                          "roi"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "liquidMinor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "productiveMinor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "liabilitiesMinor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "netWorthMinor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "waitingToInvestMinor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "liquidMinor",
+                        "productiveMinor",
+                        "liabilitiesMinor",
+                        "netWorthMinor",
+                        "waitingToInvestMinor"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "summary"
                   ],
                   "additionalProperties": false
                 }
@@ -1171,112 +1405,358 @@
                       }
                     ]
                   },
-                  "categories": {
-                    "default": [],
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "clientId": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "expense",
-                            "income_active",
-                            "income_passive"
-                          ]
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 40
-                        },
-                        "necessity": {
-                          "anyOf": [
-                            {
+                  "changes": {
+                    "default": {
+                      "category": [],
+                      "asset": [],
+                      "liability": [],
+                      "valuation": [],
+                      "transaction": []
+                    },
+                    "type": "object",
+                    "properties": {
+                      "category": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "clientId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "clientUpdatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "deleted": {
+                              "type": "boolean"
+                            },
+                            "kind": {
                               "type": "string",
                               "enum": [
-                                "essential",
-                                "moderate",
-                                "non_essential"
+                                "expense",
+                                "income_active",
+                                "income_passive"
                               ]
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "icon": {
-                          "anyOf": [
-                            {
+                            "name": {
                               "type": "string",
+                              "minLength": 1,
                               "maxLength": 40
                             },
-                            {
-                              "type": "null"
+                            "necessity": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "essential",
+                                    "moderate",
+                                    "non_essential"
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "icon": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 40
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
+                          },
+                          "required": [
+                            "clientId",
+                            "clientUpdatedAt",
+                            "deleted",
+                            "kind",
+                            "name",
+                            "necessity",
+                            "icon"
                           ]
-                        },
-                        "clientUpdatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "deleted": {
-                          "type": "boolean"
                         }
                       },
-                      "required": [
-                        "clientId",
-                        "kind",
-                        "name",
-                        "necessity",
-                        "icon",
-                        "clientUpdatedAt",
-                        "deleted"
-                      ]
-                    }
-                  },
-                  "transactions": {
-                    "default": [],
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "clientId": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                        },
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "income_active",
-                            "income_passive",
-                            "expense",
-                            "investment",
-                            "dividend"
+                      "asset": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "clientId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "clientUpdatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "deleted": {
+                              "type": "boolean"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "iman",
+                                "asaxiy",
+                                "way2",
+                                "gold",
+                                "foreign_shares",
+                                "livestock",
+                                "bank_deposit",
+                                "card",
+                                "cash",
+                                "other"
+                              ]
+                            },
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            },
+                            "liquid": {
+                              "type": "boolean"
+                            },
+                            "dividendMethod": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "withdraw",
+                                    "capitalise"
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "openingInvestedMinor": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000000
+                            },
+                            "openedOn": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            },
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 200
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "clientId",
+                            "clientUpdatedAt",
+                            "deleted",
+                            "type",
+                            "name",
+                            "liquid",
+                            "dividendMethod",
+                            "openingInvestedMinor",
+                            "openedOn",
+                            "note"
                           ]
-                        },
-                        "amountMinor": {
-                          "type": "integer",
-                          "exclusiveMinimum": 0,
-                          "maximum": 1000000000000000
-                        },
-                        "currency": {
-                          "type": "string",
-                          "enum": [
-                            "UZS",
-                            "USD"
+                        }
+                      },
+                      "liability": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "clientId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "clientUpdatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "deleted": {
+                              "type": "boolean"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "bank_loan",
+                                "nasiya",
+                                "personal",
+                                "other"
+                              ]
+                            },
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            },
+                            "balanceMinor": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000000
+                            },
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 200
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "clientId",
+                            "clientUpdatedAt",
+                            "deleted",
+                            "kind",
+                            "name",
+                            "balanceMinor",
+                            "note"
                           ]
-                        },
-                        "category": {
-                          "anyOf": [
-                            {
+                        }
+                      },
+                      "valuation": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "clientId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "clientUpdatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "deleted": {
+                              "type": "boolean"
+                            },
+                            "asset": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "valueMinor": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000000
+                            },
+                            "valuedOn": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            }
+                          },
+                          "required": [
+                            "clientId",
+                            "clientUpdatedAt",
+                            "deleted",
+                            "asset",
+                            "valueMinor",
+                            "valuedOn"
+                          ]
+                        }
+                      },
+                      "transaction": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "clientId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "clientUpdatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "deleted": {
+                              "type": "boolean"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "income_active",
+                                "income_passive",
+                                "expense",
+                                "investment",
+                                "dividend"
+                              ]
+                            },
+                            "amountMinor": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 1000000000000000
+                            },
+                            "currency": {
+                              "type": "string",
+                              "enum": [
+                                "UZS",
+                                "USD"
+                              ]
+                            },
+                            "category": {
+                              "anyOf": [
+                                {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "uuid",
+                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                    },
+                                    {
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "necessity": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "essential",
+                                    "moderate",
+                                    "non_essential"
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "asset": {
                               "anyOf": [
                                 {
                                   "type": "string",
@@ -1284,74 +1764,56 @@
                                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
-                                  "type": "string"
+                                  "type": "null"
                                 }
                               ]
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "necessity": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "enum": [
-                                "essential",
-                                "moderate",
-                                "non_essential"
+                            "capitalised": {
+                              "type": [
+                                "boolean",
+                                "null"
                               ]
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "occurredOn": {
-                          "type": "string",
-                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                        },
-                        "note": {
-                          "anyOf": [
-                            {
+                            "occurredOn": {
                               "type": "string",
-                              "maxLength": 200
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                             },
-                            {
-                              "type": "null"
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 200
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "source": {
+                              "type": "string",
+                              "enum": [
+                                "manual",
+                                "voice"
+                              ]
                             }
+                          },
+                          "required": [
+                            "clientId",
+                            "clientUpdatedAt",
+                            "deleted",
+                            "type",
+                            "amountMinor",
+                            "currency",
+                            "category",
+                            "necessity",
+                            "asset",
+                            "capitalised",
+                            "occurredOn",
+                            "note",
+                            "source"
                           ]
-                        },
-                        "source": {
-                          "type": "string",
-                          "enum": [
-                            "manual",
-                            "voice"
-                          ]
-                        },
-                        "clientUpdatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "deleted": {
-                          "type": "boolean"
                         }
-                      },
-                      "required": [
-                        "clientId",
-                        "type",
-                        "amountMinor",
-                        "currency",
-                        "category",
-                        "necessity",
-                        "occurredOn",
-                        "note",
-                        "source",
-                        "clientUpdatedAt",
-                        "deleted"
-                      ]
+                      }
                     }
                   }
                 },
@@ -1379,7 +1841,7 @@
                     "accepted": {
                       "type": "object",
                       "properties": {
-                        "categories": {
+                        "category": {
                           "type": "array",
                           "items": {
                             "type": "string",
@@ -1387,7 +1849,31 @@
                             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           }
                         },
-                        "transactions": {
+                        "asset": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          }
+                        },
+                        "liability": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          }
+                        },
+                        "valuation": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          }
+                        },
+                        "transaction": {
                           "type": "array",
                           "items": {
                             "type": "string",
@@ -1397,8 +1883,11 @@
                         }
                       },
                       "required": [
-                        "categories",
-                        "transactions"
+                        "category",
+                        "asset",
+                        "liability",
+                        "valuation",
+                        "transaction"
                       ],
                       "additionalProperties": false
                     },
@@ -1411,6 +1900,9 @@
                             "type": "string",
                             "enum": [
                               "category",
+                              "asset",
+                              "liability",
+                              "valuation",
                               "transaction"
                             ]
                           },
@@ -1434,7 +1926,7 @@
                     "changes": {
                       "type": "object",
                       "properties": {
-                        "categories": {
+                        "category": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -1443,6 +1935,14 @@
                                 "type": "string",
                                 "format": "uuid",
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
                               },
                               "kind": {
                                 "type": "string",
@@ -1482,29 +1982,21 @@
                                     "type": "null"
                                   }
                                 ]
-                              },
-                              "clientUpdatedAt": {
-                                "type": "string",
-                                "format": "date-time",
-                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                              },
-                              "deleted": {
-                                "type": "boolean"
                               }
                             },
                             "required": [
                               "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
                               "kind",
                               "name",
                               "necessity",
-                              "icon",
-                              "clientUpdatedAt",
-                              "deleted"
+                              "icon"
                             ],
                             "additionalProperties": false
                           }
                         },
-                        "transactions": {
+                        "asset": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -1513,6 +2005,210 @@
                                 "type": "string",
                                 "format": "uuid",
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "iman",
+                                  "asaxiy",
+                                  "way2",
+                                  "gold",
+                                  "foreign_shares",
+                                  "livestock",
+                                  "bank_deposit",
+                                  "card",
+                                  "cash",
+                                  "other"
+                                ]
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              },
+                              "liquid": {
+                                "type": "boolean"
+                              },
+                              "dividendMethod": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "withdraw",
+                                      "capitalise"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "openingInvestedMinor": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000000000000
+                              },
+                              "openedOn": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              "note": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
+                              "type",
+                              "name",
+                              "liquid",
+                              "dividendMethod",
+                              "openingInvestedMinor",
+                              "openedOn",
+                              "note"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "liability": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "clientId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "bank_loan",
+                                  "nasiya",
+                                  "personal",
+                                  "other"
+                                ]
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              },
+                              "balanceMinor": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000000000000
+                              },
+                              "note": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
+                              "kind",
+                              "name",
+                              "balanceMinor",
+                              "note"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "valuation": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "clientId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
+                              },
+                              "asset": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "valueMinor": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000000000000
+                              },
+                              "valuedOn": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              }
+                            },
+                            "required": [
+                              "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
+                              "asset",
+                              "valueMinor",
+                              "valuedOn"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "transaction": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "clientId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "clientUpdatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "deleted": {
+                                "type": "boolean"
                               },
                               "type": {
                                 "type": "string",
@@ -1570,6 +2266,24 @@
                                   }
                                 ]
                               },
+                              "asset": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "capitalised": {
+                                "type": [
+                                  "boolean",
+                                  "null"
+                                ]
+                              },
                               "occurredOn": {
                                 "type": "string",
                                 "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -1591,36 +2305,33 @@
                                   "manual",
                                   "voice"
                                 ]
-                              },
-                              "clientUpdatedAt": {
-                                "type": "string",
-                                "format": "date-time",
-                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                              },
-                              "deleted": {
-                                "type": "boolean"
                               }
                             },
                             "required": [
                               "clientId",
+                              "clientUpdatedAt",
+                              "deleted",
                               "type",
                               "amountMinor",
                               "currency",
                               "category",
                               "necessity",
+                              "asset",
+                              "capitalised",
                               "occurredOn",
                               "note",
-                              "source",
-                              "clientUpdatedAt",
-                              "deleted"
+                              "source"
                             ],
                             "additionalProperties": false
                           }
                         }
                       },
                       "required": [
-                        "categories",
-                        "transactions"
+                        "category",
+                        "asset",
+                        "liability",
+                        "valuation",
+                        "transaction"
                       ],
                       "additionalProperties": false
                     }

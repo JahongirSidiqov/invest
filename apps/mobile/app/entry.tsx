@@ -12,9 +12,9 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Button, ErrorText, IconButton, Screen } from '../src/components/ui';
-import { deleteTransaction, newClientId, saveTransaction } from '../src/records';
+import { deleteRecord, newClientId, saveRecord } from '../src/records';
 import { formatSum, groupDigits, localDate, parseSumInput } from '../src/records/format';
-import { useCustomCategories, useTransaction } from '../src/records/hooks';
+import { useRecord, useRecords } from '../src/records/hooks';
 import { radius, size, space, text, theme } from '../src/theme/tokens';
 
 type Tab = 'expense' | 'income' | 'investment' | 'dividend';
@@ -48,7 +48,7 @@ function Chip({
 
 export default function Entry() {
   const params = useLocalSearchParams<{ id?: string }>();
-  const record = useTransaction(params.id);
+  const record = useRecord('transaction', params.id);
   // Editing: wait for the record from the local store, then start the form with it.
   if (params.id && !record.data) return null;
   return (
@@ -65,7 +65,11 @@ function EntryForm({
 }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const customQuery = useCustomCategories();
+  const customQuery = useRecords('category');
+  const assetsQuery = useRecords('asset');
+  const assets = useMemo(() => assetsQuery.data ?? [], [assetsQuery.data]);
+  const [asset, setAsset] = useState<string | null>(existing?.asset ?? null);
+  const [capitalised, setCapitalised] = useState<boolean>(existing?.capitalised ?? false);
   const custom = useMemo(() => customQuery.data ?? [], [customQuery.data]);
 
   const [tab, setTab] = useState<Tab>(existing ? tabOf(existing.type) : 'expense');
@@ -84,6 +88,15 @@ function EntryForm({
     tab === 'income' ? (passive ? 'income_passive' : 'income_active') : tab;
   const kind: CategoryKind | null =
     type === 'expense' || type === 'income_active' || type === 'income_passive' ? type : null;
+
+  const needsAsset = type === 'investment' || type === 'dividend';
+
+  function pickAsset(id: string) {
+    setAsset(id);
+    setError(null);
+    const picked = assets.find((a) => a.clientId === id);
+    if (picked) setCapitalised(picked.dividendMethod === 'capitalise');
+  }
 
   const categories = useMemo(() => {
     if (!kind) return [];
@@ -117,6 +130,7 @@ function EntryForm({
     const amountMinor = parseSumInput(amountText);
     if (!amountMinor) return setError(t('entry.errors.amount'));
     if (kind && !category) return setError(t('entry.errors.category'));
+    if (needsAsset && !asset) return setError(t('entry.errors.asset'));
     const builtIn = category ? defaultCategory(category) : undefined;
     const record: SyncTransaction = {
       clientId: existing?.clientId ?? newClientId(),
@@ -124,6 +138,8 @@ function EntryForm({
       amountMinor,
       currency: 'UZS',
       category: kind ? category : null,
+      asset: needsAsset ? asset : null,
+      capitalised: type === 'dividend' ? capitalised : null,
       necessity: type === 'expense' ? (necessity ?? builtIn?.necessity ?? 'moderate') : null,
       occurredOn,
       note: note.trim() || null,
@@ -133,7 +149,7 @@ function EntryForm({
     };
     setBusy(true);
     try {
-      await saveTransaction(record);
+      await saveRecord('transaction', record);
       router.back();
     } finally {
       setBusy(false);
@@ -142,7 +158,7 @@ function EntryForm({
 
   async function remove() {
     if (!existing) return;
-    await deleteTransaction(existing);
+    await deleteRecord('transaction', existing);
     router.back();
   }
 
@@ -235,6 +251,43 @@ function EntryForm({
               />
             ))}
           </View>
+        </>
+      ) : null}
+
+      {needsAsset ? (
+        <>
+          <Text style={[text.label, { color: theme.textSecondary }]}>{t('entry.asset')}</Text>
+          {assets.length === 0 ? (
+            <Button
+              label={t('assets.add')}
+              variant="secondary"
+              onPress={() => router.push('/asset-form')}
+            />
+          ) : (
+            <View style={styles.chips} accessibilityRole="radiogroup">
+              {assets.map((a) => (
+                <Chip
+                  key={a.clientId}
+                  label={a.name}
+                  selected={asset === a.clientId}
+                  onPress={() => pickAsset(a.clientId)}
+                />
+              ))}
+            </View>
+          )}
+          {type === 'dividend' ? (
+            <View style={styles.row}>
+              <Text style={[text.body, { color: theme.text, flex: 1 }]}>
+                {t('entry.capitalised')}
+              </Text>
+              <Switch
+                accessibilityLabel={t('entry.capitalised')}
+                value={capitalised}
+                onValueChange={setCapitalised}
+                trackColor={{ true: theme.primary, false: theme.border }}
+              />
+            </View>
+          ) : null}
         </>
       ) : null}
 

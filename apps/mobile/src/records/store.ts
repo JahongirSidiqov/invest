@@ -1,16 +1,20 @@
-import type { SyncCategory, SyncTransaction, TransactionType } from '@invest/shared';
+import type {
+  SyncChanges,
+  SyncEntity,
+  SyncRecordMap,
+  SyncTransaction,
+  TransactionType,
+} from '@invest/shared';
 
 export type SyncStatus = 'pending' | 'synced' | 'rejected';
 
-export interface LocalTransaction extends SyncTransaction {
+export type Local<E extends SyncEntity> = SyncRecordMap[E] & {
   syncStatus: SyncStatus;
   rejectCode: string | null;
-}
+};
 
-export interface LocalCategory extends SyncCategory {
-  syncStatus: SyncStatus;
-  rejectCode: string | null;
-}
+export type LocalTransaction = Local<'transaction'>;
+export type LocalCategory = Local<'category'>;
 
 export interface TransactionFilter {
   type?: TransactionType;
@@ -26,27 +30,24 @@ export interface SyncedRef {
 }
 
 /**
- * Local record storage. The app uses the encrypted SQLite implementation; tests use
- * the in-memory one. Both must behave identically (see __tests__/store.test.ts).
+ * Local record storage for every syncable entity. The app uses the encrypted SQLite
+ * implementation; tests use the in-memory one. Both behave the same.
  */
 export interface RecordStore {
-  saveTransaction(t: SyncTransaction): Promise<void>;
-  getTransaction(clientId: string): Promise<LocalTransaction | null>;
+  save<E extends SyncEntity>(entity: E, record: SyncRecordMap[E]): Promise<void>;
+  get<E extends SyncEntity>(entity: E, clientId: string): Promise<Local<E> | null>;
+  /** Live (not deleted) records of one entity. */
+  list<E extends SyncEntity>(entity: E): Promise<Local<E>[]>;
   listTransactions(filter?: TransactionFilter): Promise<LocalTransaction[]>;
-  saveCategory(c: SyncCategory): Promise<void>;
-  listCategories(): Promise<LocalCategory[]>;
 
-  pending(limit: number): Promise<{ categories: SyncCategory[]; transactions: SyncTransaction[] }>;
+  pending(limit: number): Promise<SyncChanges>;
   /** Marks rows synced only if they were not edited again after the push started. */
-  markSynced(entity: 'category' | 'transaction', refs: SyncedRef[]): Promise<void>;
-  markRejected(entity: 'category' | 'transaction', clientId: string, code: string): Promise<void>;
-  applyRemote(changes: {
-    categories: SyncCategory[];
-    transactions: SyncTransaction[];
-  }): Promise<void>;
+  markSynced(entity: SyncEntity, refs: SyncedRef[]): Promise<void>;
+  markRejected(entity: SyncEntity, clientId: string, code: string): Promise<void>;
+  applyRemote(changes: Partial<SyncChanges>): Promise<void>;
 
-  getCursor(): Promise<string | null>;
-  setCursor(cursor: string): Promise<void>;
+  getMeta(key: string): Promise<string | null>;
+  setMeta(key: string, value: string): Promise<void>;
   countPending(): Promise<number>;
   clear(): Promise<void>;
 }
@@ -64,7 +65,15 @@ export function remoteWins(
   return Date.parse(remote.clientUpdatedAt) >= Date.parse(local.clientUpdatedAt);
 }
 
-export function sortNewestFirst(a: LocalTransaction, b: LocalTransaction): number {
+export function sortNewestFirst(a: SyncTransaction, b: SyncTransaction): number {
   if (a.occurredOn !== b.occurredOn) return a.occurredOn < b.occurredOn ? 1 : -1;
   return a.clientUpdatedAt < b.clientUpdatedAt ? 1 : -1;
+}
+
+export function matchesFilter(t: SyncTransaction, filter: TransactionFilter): boolean {
+  if (!filter.includeDeleted && t.deleted) return false;
+  if (filter.type && t.type !== filter.type) return false;
+  if (filter.from && t.occurredOn < filter.from) return false;
+  if (filter.to && t.occurredOn > filter.to) return false;
+  return true;
 }

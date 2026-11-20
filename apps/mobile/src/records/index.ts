@@ -1,6 +1,15 @@
-import type { SyncRequest, SyncResponse, SyncTransaction } from '@invest/shared';
+import {
+  DEFAULT_SETTINGS,
+  type Settings,
+  settingsSchema,
+  type SyncEntity,
+  type SyncRecordMap,
+  type SyncRequest,
+  type SyncResponse,
+} from '@invest/shared';
 import * as Crypto from 'expo-crypto';
 import { api, refreshSession } from '../api';
+import { LOCAL_MODE } from '../config';
 import { deleteLocalDatabase, openEncryptedDatabase, SqliteRecordStore } from './sqlite-store';
 import type { RecordStore } from './store';
 import { runSync, type SyncResult } from './sync-engine';
@@ -35,16 +44,41 @@ export function newClientId(): string {
   return Crypto.randomUUID();
 }
 
+export function now(): string {
+  return new Date().toISOString();
+}
+
 /** Saves locally first (works offline), then asks for a background sync. */
-export async function saveTransaction(t: SyncTransaction): Promise<void> {
+export async function saveRecord<E extends SyncEntity>(
+  entity: E,
+  record: SyncRecordMap[E],
+): Promise<void> {
   const store = await getStore();
-  await store.saveTransaction(t);
+  await store.save(entity, record);
   notify();
   requestSync();
 }
 
-export async function deleteTransaction(t: SyncTransaction): Promise<void> {
-  await saveTransaction({ ...t, deleted: true, clientUpdatedAt: new Date().toISOString() });
+export async function deleteRecord<E extends SyncEntity>(
+  entity: E,
+  record: SyncRecordMap[E],
+): Promise<void> {
+  await saveRecord(entity, { ...record, deleted: true, clientUpdatedAt: now() });
+}
+
+/** Settings live on the phone (works offline and in local mode) and are mirrored to the API. */
+export async function getSettings(): Promise<Settings> {
+  const raw = await (await getStore()).getMeta('settings');
+  const parsed = raw ? settingsSchema.safeParse(JSON.parse(raw)) : null;
+  return parsed?.success ? parsed.data : DEFAULT_SETTINGS;
+}
+
+export async function saveSettings(settings: Settings): Promise<void> {
+  await (await getStore()).setMeta('settings', JSON.stringify(settings));
+  notify();
+  if (!LOCAL_MODE) {
+    await api.PUT('/v1/me/settings', { body: settings }).catch(() => undefined);
+  }
 }
 
 class HttpError extends Error {
@@ -73,6 +107,7 @@ let failures = 0;
 
 /** Single-flight sync with exponential backoff (2 s … 5 min) after failures. */
 export function syncNow(): Promise<SyncResult | null> {
+  if (LOCAL_MODE) return Promise.resolve(null);
   running ??= (async () => {
     try {
       const store = await getStore();
@@ -92,6 +127,7 @@ export function syncNow(): Promise<SyncResult | null> {
 }
 
 function schedule(delayMs: number) {
+  if (LOCAL_MODE) return;
   if (timer) clearTimeout(timer);
   timer = setTimeout(() => {
     timer = null;
@@ -105,5 +141,6 @@ export function requestSync(): void {
 }
 
 export async function pendingCount(): Promise<number> {
+  if (LOCAL_MODE) return 0;
   return (await getStore()).countPending();
 }

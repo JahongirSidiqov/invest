@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RecordsController_wealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync": {
         parameters: {
             query?: never;
@@ -625,6 +641,9 @@ export interface operations {
                         items: {
                             /** Format: uuid */
                             clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
                             /** @enum {string} */
                             type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
                             amountMinor: number;
@@ -632,15 +651,66 @@ export interface operations {
                             currency: "UZS" | "USD";
                             category: (string) | null;
                             necessity: ("essential" | "moderate" | "non_essential") | null;
+                            asset: string | null;
+                            capitalised: boolean | null;
                             occurredOn: string;
                             note: string | null;
                             /** @enum {string} */
                             source: "manual" | "voice";
-                            /** Format: date-time */
-                            clientUpdatedAt: string;
-                            deleted: boolean;
                         }[];
                         nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    RecordsController_wealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        positions: {
+                            asset: {
+                                /** Format: uuid */
+                                clientId: string;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
+                                /** @enum {string} */
+                                type: "iman" | "asaxiy" | "way2" | "gold" | "foreign_shares" | "livestock" | "bank_deposit" | "card" | "cash" | "other";
+                                name: string;
+                                liquid: boolean;
+                                dividendMethod: ("withdraw" | "capitalise") | null;
+                                openingInvestedMinor: number;
+                                openedOn: string;
+                                note: string | null;
+                            };
+                            currentValueMinor: number;
+                            /** Format: date */
+                            valuedOn: string;
+                            investedMinor: number;
+                            withdrawnDividendsMinor: number;
+                            capitalisedDividendsMinor: number;
+                            gainMinor: number;
+                            roi: number | null;
+                        }[];
+                        summary: {
+                            liquidMinor: number;
+                            productiveMinor: number;
+                            liabilitiesMinor: number;
+                            netWorthMinor: number;
+                            waitingToInvestMinor: number;
+                        };
                     };
                 };
             };
@@ -660,38 +730,92 @@ export interface operations {
             content: {
                 "application/json": {
                     cursor: string | null;
-                    /** @default [] */
-                    categories?: {
-                        /** Format: uuid */
-                        clientId: string;
-                        /** @enum {string} */
-                        kind: "expense" | "income_active" | "income_passive";
-                        name: string;
-                        necessity: ("essential" | "moderate" | "non_essential") | null;
-                        icon: string | null;
-                        /** Format: date-time */
-                        clientUpdatedAt: string;
-                        deleted: boolean;
-                    }[];
-                    /** @default [] */
-                    transactions?: {
-                        /** Format: uuid */
-                        clientId: string;
-                        /** @enum {string} */
-                        type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
-                        amountMinor: number;
-                        /** @enum {string} */
-                        currency: "UZS" | "USD";
-                        category: (string) | null;
-                        necessity: ("essential" | "moderate" | "non_essential") | null;
-                        occurredOn: string;
-                        note: string | null;
-                        /** @enum {string} */
-                        source: "manual" | "voice";
-                        /** Format: date-time */
-                        clientUpdatedAt: string;
-                        deleted: boolean;
-                    }[];
+                    /**
+                     * @default {
+                     *       "category": [],
+                     *       "asset": [],
+                     *       "liability": [],
+                     *       "valuation": [],
+                     *       "transaction": []
+                     *     }
+                     */
+                    changes?: {
+                        /** @default [] */
+                        category?: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                            /** @enum {string} */
+                            kind: "expense" | "income_active" | "income_passive";
+                            name: string;
+                            necessity: ("essential" | "moderate" | "non_essential") | null;
+                            icon: string | null;
+                        }[];
+                        /** @default [] */
+                        asset?: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                            /** @enum {string} */
+                            type: "iman" | "asaxiy" | "way2" | "gold" | "foreign_shares" | "livestock" | "bank_deposit" | "card" | "cash" | "other";
+                            name: string;
+                            liquid: boolean;
+                            dividendMethod: ("withdraw" | "capitalise") | null;
+                            openingInvestedMinor: number;
+                            openedOn: string;
+                            note: string | null;
+                        }[];
+                        /** @default [] */
+                        liability?: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                            /** @enum {string} */
+                            kind: "bank_loan" | "nasiya" | "personal" | "other";
+                            name: string;
+                            balanceMinor: number;
+                            note: string | null;
+                        }[];
+                        /** @default [] */
+                        valuation?: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                            /** Format: uuid */
+                            asset: string;
+                            valueMinor: number;
+                            valuedOn: string;
+                        }[];
+                        /** @default [] */
+                        transaction?: {
+                            /** Format: uuid */
+                            clientId: string;
+                            /** Format: date-time */
+                            clientUpdatedAt: string;
+                            deleted: boolean;
+                            /** @enum {string} */
+                            type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
+                            amountMinor: number;
+                            /** @enum {string} */
+                            currency: "UZS" | "USD";
+                            category: (string) | null;
+                            necessity: ("essential" | "moderate" | "non_essential") | null;
+                            asset: string | null;
+                            capitalised: boolean | null;
+                            occurredOn: string;
+                            note: string | null;
+                            /** @enum {string} */
+                            source: "manual" | "voice";
+                        }[];
+                    };
                 };
             };
         };
@@ -705,32 +829,76 @@ export interface operations {
                         cursor: string;
                         hasMore: boolean;
                         accepted: {
-                            categories: string[];
-                            transactions: string[];
+                            category: string[];
+                            asset: string[];
+                            liability: string[];
+                            valuation: string[];
+                            transaction: string[];
                         };
                         rejected: {
                             /** @enum {string} */
-                            entity: "category" | "transaction";
+                            entity: "category" | "asset" | "liability" | "valuation" | "transaction";
                             /** Format: uuid */
                             clientId: string;
                             code: string;
                         }[];
                         changes: {
-                            categories: {
+                            category: {
                                 /** Format: uuid */
                                 clientId: string;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
                                 /** @enum {string} */
                                 kind: "expense" | "income_active" | "income_passive";
                                 name: string;
                                 necessity: ("essential" | "moderate" | "non_essential") | null;
                                 icon: string | null;
+                            }[];
+                            asset: {
+                                /** Format: uuid */
+                                clientId: string;
                                 /** Format: date-time */
                                 clientUpdatedAt: string;
                                 deleted: boolean;
+                                /** @enum {string} */
+                                type: "iman" | "asaxiy" | "way2" | "gold" | "foreign_shares" | "livestock" | "bank_deposit" | "card" | "cash" | "other";
+                                name: string;
+                                liquid: boolean;
+                                dividendMethod: ("withdraw" | "capitalise") | null;
+                                openingInvestedMinor: number;
+                                openedOn: string;
+                                note: string | null;
                             }[];
-                            transactions: {
+                            liability: {
                                 /** Format: uuid */
                                 clientId: string;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
+                                /** @enum {string} */
+                                kind: "bank_loan" | "nasiya" | "personal" | "other";
+                                name: string;
+                                balanceMinor: number;
+                                note: string | null;
+                            }[];
+                            valuation: {
+                                /** Format: uuid */
+                                clientId: string;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
+                                /** Format: uuid */
+                                asset: string;
+                                valueMinor: number;
+                                valuedOn: string;
+                            }[];
+                            transaction: {
+                                /** Format: uuid */
+                                clientId: string;
+                                /** Format: date-time */
+                                clientUpdatedAt: string;
+                                deleted: boolean;
                                 /** @enum {string} */
                                 type: "income_active" | "income_passive" | "expense" | "investment" | "dividend";
                                 amountMinor: number;
@@ -738,13 +906,12 @@ export interface operations {
                                 currency: "UZS" | "USD";
                                 category: (string) | null;
                                 necessity: ("essential" | "moderate" | "non_essential") | null;
+                                asset: string | null;
+                                capitalised: boolean | null;
                                 occurredOn: string;
                                 note: string | null;
                                 /** @enum {string} */
                                 source: "manual" | "voice";
-                                /** Format: date-time */
-                                clientUpdatedAt: string;
-                                deleted: boolean;
                             }[];
                         };
                     };

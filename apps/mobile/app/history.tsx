@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton } from '../src/components/ui';
 import { syncNow } from '../src/records';
 import { formatSum } from '../src/records/format';
-import { useCustomCategories, usePendingCount, useTransactions } from '../src/records/hooks';
+import { usePendingCount, useRecords, useTransactions } from '../src/records/hooks';
 import type { LocalTransaction } from '../src/records/store';
 import { radius, size, space, text, theme } from '../src/theme/tokens';
 
@@ -44,7 +44,7 @@ export default function History() {
   const [filter, setFilter] = useState<TransactionType | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const records = useTransactions(filter === 'all' ? {} : { type: filter });
-  const custom = useCustomCategories().data ?? [];
+  const custom = useRecords('category').data ?? [];
   const pending = usePendingCount().data ?? 0;
 
   function categoryLabel(ref: string | null, type: TransactionType): string {

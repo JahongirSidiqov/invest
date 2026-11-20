@@ -18,6 +18,8 @@ const base = {
   currency: 'UZS' as const,
   category: 'food',
   necessity: 'essential' as const,
+  asset: null,
+  capitalised: null,
   occurredOn: '2026-11-18',
   note: 'Tushlik',
   source: 'manual' as const,
@@ -70,9 +72,17 @@ describe('syncTransactionSchema', () => {
     expect(codes({ ...base, category: 'not-a-slug' })).not.toEqual([]);
   });
 
-  it('allows investments and dividends without a category', () => {
-    expect(codes({ ...base, type: 'investment', category: null, necessity: null })).toEqual([]);
-    expect(codes({ ...base, type: 'dividend', category: null, necessity: null })).toEqual([]);
+  it('links investments and dividends to an asset, without a category', () => {
+    const asset = '0193a0e1-7c3a-7b1e-8f00-0000000000aa';
+    const inv = { ...base, type: 'investment', category: null, necessity: null, asset };
+    expect(codes(inv)).toEqual([]);
+    expect(codes({ ...inv, asset: null })).toContain('asset_required');
+    expect(codes({ ...inv, category: 'food' })).toContain('category_not_allowed');
+    const div = { ...inv, type: 'dividend', capitalised: false };
+    expect(codes(div)).toEqual([]);
+    expect(codes({ ...div, capitalised: null })).toContain('capitalised_required');
+    expect(codes({ ...inv, capitalised: true })).toContain('capitalised_only_for_dividend');
+    expect(codes({ ...base, asset })).toContain('asset_not_allowed');
   });
 
   it('accepts a custom category by client id', () => {
@@ -109,8 +119,13 @@ describe('syncCategorySchema', () => {
 describe('syncRequestSchema', () => {
   it('limits the batch size', () => {
     const many = Array.from({ length: SYNC_MAX_BATCH + 1 }, () => base);
-    expect(syncRequestSchema.safeParse({ cursor: null, transactions: many }).success).toBe(false);
-    expect(syncRequestSchema.safeParse({ cursor: '42', transactions: [base] }).success).toBe(true);
+    expect(
+      syncRequestSchema.safeParse({ cursor: null, changes: { transaction: many } }).success,
+    ).toBe(false);
+    expect(
+      syncRequestSchema.safeParse({ cursor: '42', changes: { transaction: [base] } }).success,
+    ).toBe(true);
+    expect(syncRequestSchema.parse({ cursor: null }).changes.asset).toEqual([]);
   });
 });
 

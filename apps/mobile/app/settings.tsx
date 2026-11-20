@@ -1,53 +1,50 @@
-import { DEFAULT_SETTINGS, type Settings } from '@invest/shared';
-import { useQuery } from '@tanstack/react-query';
+import type { Settings } from '@invest/shared';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { api } from '../src/api';
 import { Button, ErrorText, IconButton, Screen, Subtitle } from '../src/components/ui';
+import { saveSettings } from '../src/records';
 import { groupDigits, parseSumInput } from '../src/records/format';
+import { useSettings } from '../src/records/hooks';
+import { useSession } from '../src/state/session';
 import { radius, size, space, text, theme } from '../src/theme/tokens';
 
 export default function SettingsScreen() {
-  const settings = useQuery({
-    queryKey: ['settings'],
-    queryFn: async () => ((await api.GET('/v1/me/settings')).data as Settings) ?? DEFAULT_SETTINGS,
-  });
+  const settings = useSettings();
   if (!settings.data) return null;
-  return <SettingsForm initial={settings.data} onSaved={() => void settings.refetch()} />;
+  return <SettingsForm initial={settings.data} />;
 }
 
-function SettingsForm({ initial, onSaved }: { initial: Settings; onSaved: () => void }) {
+function SettingsForm({ initial }: { initial: Settings }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const signOut = useSession((s) => s.signOut);
   const [reserve, setReserve] = useState(groupDigits(String(initial.reserveMinor / 100)));
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   async function save() {
     const reserveMinor = reserve.replace(/\D/g, '') === '0' ? 0 : parseSumInput(reserve);
     if (reserveMinor === null) return setError(t('entry.errors.amount'));
-    setBusy(true);
     setError(null);
-    try {
-      const { data } = await api.PUT('/v1/me/settings', {
-        body: { ...initial, reserveMinor },
-      });
-      if (data) {
-        setMessage(t('settings.saved'));
-        onSaved();
-      } else setError(t('common.error'));
-    } catch {
-      setError(t('common.offline'));
-    } finally {
-      setBusy(false);
-    }
+    await saveSettings({ ...initial, reserveMinor });
+    setMessage(t('settings.saved'));
   }
 
   return (
-    <Screen footer={<Button label={t('entry.save')} onPress={save} loading={busy} />}>
+    <Screen
+      footer={
+        <>
+          <Button label={t('entry.save')} onPress={save} />
+          <Button
+            label={t('settings.signOut')}
+            variant="secondary"
+            onPress={() => void signOut()}
+          />
+        </>
+      }
+    >
       <View style={styles.header}>
         <IconButton icon="chevron-left" label={t('common.back')} onPress={() => router.back()} />
         <Text style={[text.title, { color: theme.text }]} accessibilityRole="header">

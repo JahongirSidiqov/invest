@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+
+// Server mode; local mode is covered in session-local.test.ts.
+jest.mock('../src/config', () => ({ API_URL: 'http://test', LOCAL_MODE: false }));
 import { savePin } from '../src/state/pin';
 import { secure } from '../src/state/secure';
 import { useSession } from '../src/state/session';

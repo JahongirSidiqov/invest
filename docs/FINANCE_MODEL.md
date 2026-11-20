@@ -50,6 +50,8 @@ Data sufficiency:
 - With fewer, the stage is **provisional**: M and X come from the onboarding answer "average monthly spending" (with M = X until enough essential data exists), L from the onboarding answer "current savings" or the assets entered, P from records so far. The UI labels it "taxminiy" and shows how many months of data are still needed.
 - With no spending figure at all, the app shows "ma'lumot yetarli emas" and no stage.
 
+Implementation: `packages/shared/src/finance/stage.ts` (stage, KPIs, life model) and `finance/assets.ts` (positions, net worth). Until goals exist, G = 0.
+
 ## 3. KPIs
 
 Home screen shows the first five; the monthly report shows all.

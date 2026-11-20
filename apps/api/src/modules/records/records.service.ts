@@ -1,6 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
+  type AssetPosition,
+  assetPositions,
   DEFAULT_CATEGORIES,
+  wealthSummary,
+  type WealthSummary,
   type SyncTransaction,
   TRANSACTION_TYPES,
   type TransactionType,
@@ -8,7 +12,16 @@ import {
 import { z } from 'zod';
 import { AppError } from '../../common/problem.filter';
 import { PrismaService } from '../../infra/prisma.service';
-import { categoryToSync, fromDateOnly, toDateOnly, transactionToSync } from './mappers';
+import { SettingsService } from '../users/settings.service';
+import {
+  assetToSync,
+  categoryToSync,
+  fromDateOnly,
+  liabilityToSync,
+  toDateOnly,
+  transactionToSync,
+  valuationToSync,
+} from './mappers';
 
 export const listQuerySchema = z.object({
   from: z.iso.date().optional(),
@@ -42,7 +55,34 @@ function decodeCursor(cursor: string): { occurredOn: string; id: string } {
 
 @Injectable()
 export class RecordsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settings: SettingsService,
+  ) {}
+
+  async wealth(userId: string): Promise<{ positions: AssetPosition[]; summary: WealthSummary }> {
+    const { reserveMinor } = await this.settings.get(userId);
+    return this.prisma.asUser(userId, async (tx) => {
+      const live = { userId, deletedAt: null };
+      const [assets, valuations, transactions, liabilities] = await Promise.all([
+        tx.asset.findMany({ where: live }),
+        tx.assetValuation.findMany({ where: live }),
+        tx.transaction.findMany({
+          where: { ...live, type: { in: ['investment', 'dividend'] } },
+        }),
+        tx.liability.findMany({ where: live }),
+      ]);
+      const positions = assetPositions(
+        assets.map(assetToSync),
+        valuations.map(valuationToSync),
+        transactions.map(transactionToSync),
+      );
+      return {
+        positions,
+        summary: wealthSummary(positions, liabilities.map(liabilityToSync), reserveMinor),
+      };
+    });
+  }
 
   /** Built-in categories (names come from the app's locale packs) plus the user's own. */
   listCategories(userId: string): Promise<CategoryView[]> {

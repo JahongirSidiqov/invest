@@ -1,9 +1,15 @@
-import type { SyncCategory, SyncTransaction } from '@invest/shared';
+import {
+  emptyChanges,
+  SYNC_ENTITIES,
+  type SyncChanges,
+  type SyncEntity,
+  type SyncRecordMap,
+} from '@invest/shared';
 import * as Crypto from 'expo-crypto';
 import * as SQLite from 'expo-sqlite';
 import { secure } from '../state/secure';
 import {
-  type LocalCategory,
+  type Local,
   type LocalTransaction,
   type RecordStore,
   remoteWins,
@@ -13,104 +19,41 @@ import {
 
 const DB_NAME = 'records.db';
 
+/**
+ * One table for every syncable entity: the record is stored as JSON, with the
+ * columns sync and history queries need pulled out next to it.
+ */
 const MIGRATIONS = [
-  `CREATE TABLE transactions (
-     client_id TEXT PRIMARY KEY NOT NULL,
-     type TEXT NOT NULL,
-     amount_minor INTEGER NOT NULL,
-     currency TEXT NOT NULL,
-     category TEXT,
-     necessity TEXT,
-     occurred_on TEXT NOT NULL,
-     note TEXT,
-     source TEXT NOT NULL,
+  `CREATE TABLE records (
+     entity TEXT NOT NULL,
+     client_id TEXT NOT NULL,
+     data TEXT NOT NULL,
      client_updated_at TEXT NOT NULL,
      deleted INTEGER NOT NULL DEFAULT 0,
      sync_status TEXT NOT NULL,
-     reject_code TEXT
+     reject_code TEXT,
+     occurred_on TEXT,
+     type TEXT,
+     PRIMARY KEY (entity, client_id)
    );
-   CREATE INDEX transactions_occurred ON transactions (occurred_on DESC, client_updated_at DESC);
-   CREATE INDEX transactions_status ON transactions (sync_status);
-   CREATE TABLE categories (
-     client_id TEXT PRIMARY KEY NOT NULL,
-     kind TEXT NOT NULL,
-     name TEXT NOT NULL,
-     necessity TEXT,
-     icon TEXT,
-     client_updated_at TEXT NOT NULL,
-     deleted INTEGER NOT NULL DEFAULT 0,
-     sync_status TEXT NOT NULL,
-     reject_code TEXT
-   );
+   CREATE INDEX records_status ON records (sync_status);
+   CREATE INDEX records_history ON records (entity, occurred_on DESC, client_updated_at DESC);
    CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);`,
 ];
 
-type TxRow = {
-  client_id: string;
-  type: string;
-  amount_minor: number;
-  currency: string;
-  category: string | null;
-  necessity: string | null;
-  occurred_on: string;
-  note: string | null;
-  source: string;
-  client_updated_at: string;
-  deleted: number;
+type Row = {
+  entity: string;
+  data: string;
   sync_status: string;
   reject_code: string | null;
 };
 
-type CatRow = {
-  client_id: string;
-  kind: string;
-  name: string;
-  necessity: string | null;
-  icon: string | null;
-  client_updated_at: string;
-  deleted: number;
-  sync_status: string;
-  reject_code: string | null;
-};
-
-function txFromRow(r: TxRow): LocalTransaction {
+function fromRow<E extends SyncEntity>(row: Row): Local<E> {
   return {
-    clientId: r.client_id,
-    type: r.type as LocalTransaction['type'],
-    amountMinor: r.amount_minor,
-    currency: r.currency as LocalTransaction['currency'],
-    category: r.category,
-    necessity: r.necessity as LocalTransaction['necessity'],
-    occurredOn: r.occurred_on,
-    note: r.note,
-    source: r.source as LocalTransaction['source'],
-    clientUpdatedAt: r.client_updated_at,
-    deleted: r.deleted === 1,
-    syncStatus: r.sync_status as LocalTransaction['syncStatus'],
-    rejectCode: r.reject_code,
+    ...(JSON.parse(row.data) as SyncRecordMap[E]),
+    syncStatus: row.sync_status as Local<E>['syncStatus'],
+    rejectCode: row.reject_code,
   };
-}
-
-function catFromRow(r: CatRow): LocalCategory {
-  return {
-    clientId: r.client_id,
-    kind: r.kind as LocalCategory['kind'],
-    name: r.name,
-    necessity: r.necessity as LocalCategory['necessity'],
-    icon: r.icon,
-    clientUpdatedAt: r.client_updated_at,
-    deleted: r.deleted === 1,
-    syncStatus: r.sync_status as LocalCategory['syncStatus'],
-    rejectCode: r.reject_code,
-  };
-}
-
-function stripTx({ syncStatus: _s, rejectCode: _r, ...t }: LocalTransaction): SyncTransaction {
-  return t;
-}
-
-function stripCat({ syncStatus: _s, rejectCode: _r, ...c }: LocalCategory): SyncCategory {
-  return c;
 }
 
 /** Hex key for SQLCipher, created once per install and kept in the OS keystore. */
@@ -136,7 +79,7 @@ export async function openEncryptedDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!cipher?.cipher_version && !__DEV__) {
     throw new Error('Local database is not encrypted; SQLCipher is required');
   }
-  await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
+  await db.execAsync('PRAGMA journal_mode = WAL;');
 
   const version =
     (await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;'))?.user_version ?? 0;
@@ -157,65 +100,50 @@ export async function deleteLocalDatabase(): Promise<void> {
 export class SqliteRecordStore implements RecordStore {
   constructor(private readonly db: SQLite.SQLiteDatabase) {}
 
-  private async upsertTx(t: SyncTransaction, status: string): Promise<void> {
+  private async upsert(entity: SyncEntity, record: SyncRecordMap[SyncEntity], status: string) {
+    const t = entity === 'transaction' ? (record as SyncRecordMap['transaction']) : null;
     await this.db.runAsync(
-      `INSERT INTO transactions (client_id, type, amount_minor, currency, category, necessity,
-         occurred_on, note, source, client_updated_at, deleted, sync_status, reject_code)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
-       ON CONFLICT (client_id) DO UPDATE SET type = excluded.type, amount_minor = excluded.amount_minor,
-         currency = excluded.currency, category = excluded.category, necessity = excluded.necessity,
-         occurred_on = excluded.occurred_on, note = excluded.note, source = excluded.source,
+      `INSERT INTO records (entity, client_id, data, client_updated_at, deleted, sync_status,
+         reject_code, occurred_on, type)
+       VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)
+       ON CONFLICT (entity, client_id) DO UPDATE SET data = excluded.data,
          client_updated_at = excluded.client_updated_at, deleted = excluded.deleted,
-         sync_status = excluded.sync_status, reject_code = NULL`,
-      t.clientId,
-      t.type,
-      t.amountMinor,
-      t.currency,
-      t.category,
-      t.necessity,
-      t.occurredOn,
-      t.note,
-      t.source,
-      t.clientUpdatedAt,
-      t.deleted ? 1 : 0,
+         sync_status = excluded.sync_status, reject_code = NULL,
+         occurred_on = excluded.occurred_on, type = excluded.type`,
+      entity,
+      record.clientId,
+      JSON.stringify(record),
+      record.clientUpdatedAt,
+      record.deleted ? 1 : 0,
       status,
+      t?.occurredOn ?? null,
+      t?.type ?? null,
     );
   }
 
-  private async upsertCat(c: SyncCategory, status: string): Promise<void> {
-    await this.db.runAsync(
-      `INSERT INTO categories (client_id, kind, name, necessity, icon, client_updated_at, deleted,
-         sync_status, reject_code)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
-       ON CONFLICT (client_id) DO UPDATE SET kind = excluded.kind, name = excluded.name,
-         necessity = excluded.necessity, icon = excluded.icon,
-         client_updated_at = excluded.client_updated_at, deleted = excluded.deleted,
-         sync_status = excluded.sync_status, reject_code = NULL`,
-      c.clientId,
-      c.kind,
-      c.name,
-      c.necessity,
-      c.icon,
-      c.clientUpdatedAt,
-      c.deleted ? 1 : 0,
-      status,
-    );
+  save<E extends SyncEntity>(entity: E, record: SyncRecordMap[E]) {
+    return this.upsert(entity, record, 'pending');
   }
 
-  saveTransaction(t: SyncTransaction) {
-    return this.upsertTx(t, 'pending');
-  }
-
-  async getTransaction(clientId: string) {
-    const row = await this.db.getFirstAsync<TxRow>(
-      'SELECT * FROM transactions WHERE client_id = ?',
+  async get<E extends SyncEntity>(entity: E, clientId: string) {
+    const row = await this.db.getFirstAsync<Row>(
+      'SELECT * FROM records WHERE entity = ? AND client_id = ?',
+      entity,
       clientId,
     );
-    return row ? txFromRow(row) : null;
+    return row ? fromRow<E>(row) : null;
   }
 
-  async listTransactions(filter: TransactionFilter = {}) {
-    const where: string[] = [];
+  async list<E extends SyncEntity>(entity: E) {
+    const rows = await this.db.getAllAsync<Row>(
+      'SELECT * FROM records WHERE entity = ? AND deleted = 0',
+      entity,
+    );
+    return rows.map((r) => fromRow<E>(r));
+  }
+
+  async listTransactions(filter: TransactionFilter = {}): Promise<LocalTransaction[]> {
+    const where = ["entity = 'transaction'"];
     const params: (string | number)[] = [];
     if (!filter.includeDeleted) where.push('deleted = 0');
     if (filter.type) {
@@ -230,48 +158,36 @@ export class SqliteRecordStore implements RecordStore {
       where.push('occurred_on <= ?');
       params.push(filter.to);
     }
-    const rows = await this.db.getAllAsync<TxRow>(
-      `SELECT * FROM transactions ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+    const rows = await this.db.getAllAsync<Row>(
+      `SELECT * FROM records WHERE ${where.join(' AND ')}
        ORDER BY occurred_on DESC, client_updated_at DESC LIMIT ?`,
       ...params,
       filter.limit ?? -1,
     );
-    return rows.map(txFromRow);
+    return rows.map((r) => fromRow<'transaction'>(r));
   }
 
-  saveCategory(c: SyncCategory) {
-    return this.upsertCat(c, 'pending');
-  }
-
-  async listCategories() {
-    const rows = await this.db.getAllAsync<CatRow>(
-      'SELECT * FROM categories WHERE deleted = 0 ORDER BY name',
-    );
-    return rows.map(catFromRow);
-  }
-
-  async pending(limit: number) {
-    const cats = await this.db.getAllAsync<CatRow>(
-      "SELECT * FROM categories WHERE sync_status = 'pending' LIMIT ?",
+  async pending(limit: number): Promise<SyncChanges> {
+    const out = emptyChanges();
+    const rows = await this.db.getAllAsync<Row>(
+      "SELECT * FROM records WHERE sync_status = 'pending' LIMIT ?",
       limit,
     );
-    const txs = await this.db.getAllAsync<TxRow>(
-      "SELECT * FROM transactions WHERE sync_status = 'pending' LIMIT ?",
-      limit - cats.length,
-    );
-    return {
-      categories: cats.map(catFromRow).map(stripCat),
-      transactions: txs.map(txFromRow).map(stripTx),
-    };
+    // Dependency order (categories and assets first) is applied by the server.
+    for (const row of rows) {
+      const { syncStatus: _s, rejectCode: _r, ...record } = fromRow(row);
+      (out[row.entity as SyncEntity] as unknown[]).push(record);
+    }
+    return out;
   }
 
-  async markSynced(entity: 'category' | 'transaction', refs: SyncedRef[]) {
-    const table = entity === 'category' ? 'categories' : 'transactions';
+  async markSynced(entity: SyncEntity, refs: SyncedRef[]) {
     await this.db.withTransactionAsync(async () => {
       for (const ref of refs) {
         await this.db.runAsync(
-          `UPDATE ${table} SET sync_status = 'synced', reject_code = NULL
-           WHERE client_id = ? AND client_updated_at = ?`,
+          `UPDATE records SET sync_status = 'synced', reject_code = NULL
+           WHERE entity = ? AND client_id = ? AND client_updated_at = ?`,
+          entity,
           ref.clientId,
           ref.clientUpdatedAt,
         );
@@ -279,54 +195,50 @@ export class SqliteRecordStore implements RecordStore {
     });
   }
 
-  async markRejected(entity: 'category' | 'transaction', clientId: string, code: string) {
-    const table = entity === 'category' ? 'categories' : 'transactions';
+  async markRejected(entity: SyncEntity, clientId: string, code: string) {
     await this.db.runAsync(
-      `UPDATE ${table} SET sync_status = 'rejected', reject_code = ? WHERE client_id = ?`,
+      "UPDATE records SET sync_status = 'rejected', reject_code = ? WHERE entity = ? AND client_id = ?",
       code,
+      entity,
       clientId,
     );
   }
 
-  async applyRemote(changes: { categories: SyncCategory[]; transactions: SyncTransaction[] }) {
+  async applyRemote(changes: Partial<SyncChanges>) {
     await this.db.withTransactionAsync(async () => {
-      for (const c of changes.categories) {
-        const local = await this.db.getFirstAsync<CatRow>(
-          'SELECT * FROM categories WHERE client_id = ?',
-          c.clientId,
-        );
-        if (remoteWins(local ? catFromRow(local) : null, c)) await this.upsertCat(c, 'synced');
-      }
-      for (const t of changes.transactions) {
-        const local = await this.getTransaction(t.clientId);
-        if (remoteWins(local, t)) await this.upsertTx(t, 'synced');
+      for (const entity of SYNC_ENTITIES) {
+        for (const record of changes[entity] ?? []) {
+          const local = await this.get(entity, record.clientId);
+          if (remoteWins(local, record)) await this.upsert(entity, record, 'synced');
+        }
       }
     });
   }
 
-  async getCursor() {
+  async getMeta(key: string) {
     const row = await this.db.getFirstAsync<{ value: string }>(
-      "SELECT value FROM meta WHERE key = 'cursor'",
+      'SELECT value FROM meta WHERE key = ?',
+      key,
     );
     return row?.value ?? null;
   }
 
-  async setCursor(cursor: string) {
+  async setMeta(key: string, value: string) {
     await this.db.runAsync(
-      "INSERT INTO meta (key, value) VALUES ('cursor', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-      cursor,
+      'INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value',
+      key,
+      value,
     );
   }
 
   async countPending() {
     const row = await this.db.getFirstAsync<{ n: number }>(
-      `SELECT (SELECT COUNT(*) FROM transactions WHERE sync_status = 'pending')
-            + (SELECT COUNT(*) FROM categories WHERE sync_status = 'pending') AS n`,
+      "SELECT COUNT(*) AS n FROM records WHERE sync_status = 'pending'",
     );
     return row?.n ?? 0;
   }
 
   async clear() {
-    await this.db.execAsync('DELETE FROM transactions; DELETE FROM categories; DELETE FROM meta;');
+    await this.db.execAsync('DELETE FROM records; DELETE FROM meta;');
   }
 }

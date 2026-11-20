@@ -1,4 +1,4 @@
-import { SYNC_MAX_BATCH, type SyncRequest, type SyncResponse } from '@invest/shared';
+import { SYNC_ENTITIES, SYNC_MAX_BATCH, type SyncRequest, type SyncResponse } from '@invest/shared';
 import type { RecordStore } from './store';
 
 export type PushFn = (request: SyncRequest, idempotencyKey: string) => Promise<SyncResponse>;
@@ -26,35 +26,32 @@ export async function runSync(
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const pending = await store.pending(SYNC_MAX_BATCH);
-    const cursor = await store.getCursor();
-    const response = await push(
-      { cursor, categories: pending.categories, transactions: pending.transactions },
-      newKey(),
-    );
+    const cursor = await store.getMeta('cursor');
+    const response = await push({ cursor, changes: pending }, newKey());
 
-    const pushedAt = new Map(
-      [...pending.categories, ...pending.transactions].map((r) => [r.clientId, r.clientUpdatedAt]),
-    );
-    const refs = (ids: string[]) =>
-      ids.flatMap((clientId) => {
-        const clientUpdatedAt = pushedAt.get(clientId);
-        return clientUpdatedAt ? [{ clientId, clientUpdatedAt }] : [];
-      });
-
-    await store.markSynced('category', refs(response.accepted.categories));
-    await store.markSynced('transaction', refs(response.accepted.transactions));
+    let pendingCount = 0;
+    for (const entity of SYNC_ENTITIES) {
+      const pushedAt = new Map(pending[entity].map((r) => [r.clientId, r.clientUpdatedAt]));
+      pendingCount += pending[entity].length;
+      const accepted = response.accepted[entity] ?? [];
+      await store.markSynced(
+        entity,
+        accepted.flatMap((clientId) => {
+          const clientUpdatedAt = pushedAt.get(clientId);
+          return clientUpdatedAt ? [{ clientId, clientUpdatedAt }] : [];
+        }),
+      );
+      result.pushed += accepted.length;
+      result.pulled += response.changes[entity]?.length ?? 0;
+    }
     for (const r of response.rejected) {
       await store.markRejected(r.entity, r.clientId, r.code);
     }
     await store.applyRemote(response.changes);
-    await store.setCursor(response.cursor);
-
-    result.pushed += response.accepted.categories.length + response.accepted.transactions.length;
-    result.pulled += response.changes.categories.length + response.changes.transactions.length;
+    await store.setMeta('cursor', response.cursor);
     result.rejected += response.rejected.length;
 
-    const morePending = pending.categories.length + pending.transactions.length === SYNC_MAX_BATCH;
-    if (!response.hasMore && !morePending) break;
+    if (!response.hasMore && pendingCount < SYNC_MAX_BATCH) break;
   }
   return result;
 }

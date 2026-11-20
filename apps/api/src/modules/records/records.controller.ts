@@ -3,9 +3,14 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOkResponse, ApiTags } from '@nest
 import {
   CATEGORY_KINDS,
   NECESSITY,
+  SYNC_ENTITIES,
+  type SyncEntity,
+  syncAssetSchema,
   syncCategorySchema,
+  syncLiabilitySchema,
   syncRequestSchema,
   syncTransactionSchema,
+  syncValuationSchema,
 } from '@invest/shared';
 import { z } from 'zod';
 import { bodySchema, responseSchema, ZodPipe } from '../../common/zod';
@@ -28,20 +33,49 @@ const transactionPage = z.object({
   nextCursor: z.string().nullable(),
 });
 
+const entityLists = <T extends z.ZodType>(item: T) =>
+  z.object(
+    Object.fromEntries(SYNC_ENTITIES.map((e) => [e, z.array(item)])) as Record<
+      SyncEntity,
+      z.ZodArray<T>
+    >,
+  );
+
 const syncResponse = z.object({
   cursor: z.string(),
   hasMore: z.boolean(),
-  accepted: z.object({ categories: z.array(z.uuid()), transactions: z.array(z.uuid()) }),
+  accepted: entityLists(z.uuid()),
   rejected: z.array(
-    z.object({
-      entity: z.enum(['category', 'transaction']),
-      clientId: z.uuid(),
-      code: z.string(),
-    }),
+    z.object({ entity: z.enum(SYNC_ENTITIES), clientId: z.uuid(), code: z.string() }),
   ),
   changes: z.object({
-    categories: z.array(syncCategorySchema),
-    transactions: z.array(syncTransactionSchema),
+    category: z.array(syncCategorySchema),
+    asset: z.array(syncAssetSchema),
+    liability: z.array(syncLiabilitySchema),
+    valuation: z.array(syncValuationSchema),
+    transaction: z.array(syncTransactionSchema),
+  }),
+});
+
+const wealthView = z.object({
+  positions: z.array(
+    z.object({
+      asset: syncAssetSchema,
+      currentValueMinor: z.number().int(),
+      valuedOn: z.iso.date(),
+      investedMinor: z.number().int(),
+      withdrawnDividendsMinor: z.number().int(),
+      capitalisedDividendsMinor: z.number().int(),
+      gainMinor: z.number().int(),
+      roi: z.number().nullable(),
+    }),
+  ),
+  summary: z.object({
+    liquidMinor: z.number().int(),
+    productiveMinor: z.number().int(),
+    liabilitiesMinor: z.number().int(),
+    netWorthMinor: z.number().int(),
+    waitingToInvestMinor: z.number().int(),
   }),
 });
 
@@ -70,8 +104,15 @@ export class RecordsController {
     return this.records.listTransactions(auth.userId, query);
   }
 
+  /** Asset positions and net worth, computed with the same shared code as the phone. */
+  @Get('assets')
+  @ApiOkResponse({ schema: responseSchema(wealthView) })
+  wealth(@Auth() auth: AccessClaims) {
+    return this.records.wealth(auth.userId);
+  }
+
   /**
-   * The single write path for categories and transactions. Offline clients push
+   * The single write path for every syncable entity. Offline clients push
    * pending changes and pull everything newer than their cursor.
    */
   @Post('sync')

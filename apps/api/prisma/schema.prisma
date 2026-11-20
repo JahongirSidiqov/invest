@@ -161,6 +161,10 @@ model Transaction {
   /// built-in slug or the client id of a custom category
   category        String?
   necessity       String?
+  /// client id of the linked asset (investments and dividends)
+  asset           String?   @db.Uuid
+  /// dividends only: reinvested instead of paid out
+  capitalised     Boolean?
   occurredOn      DateTime  @map("occurred_on") @db.Date
   note            String?
   source          String
@@ -174,4 +178,69 @@ model Transaction {
   @@index([userId, serverVersion])
   @@index([userId, occurredOn])
   @@map("transactions")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: assets, valuations, liabilities (syncable, same columns as above)
+// ---------------------------------------------------------------------------
+
+model Asset {
+  id                   String    @id @default(uuid(7)) @db.Uuid
+  userId               String    @map("user_id") @db.Uuid
+  clientId             String    @map("client_id") @db.Uuid
+  type                 String
+  name                 String
+  liquid               Boolean
+  dividendMethod       String?   @map("dividend_method")
+  openingInvestedMinor BigInt    @map("opening_invested_minor")
+  openedOn             DateTime  @map("opened_on") @db.Date
+  note                 String?
+  clientUpdatedAt      DateTime  @map("client_updated_at")
+  deletedAt            DateTime? @map("deleted_at")
+  serverVersion        BigInt    @default(dbgenerated("nextval('sync_version_seq')")) @map("server_version")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, clientId])
+  @@index([userId, serverVersion])
+  @@map("assets")
+}
+
+model AssetValuation {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  clientId        String    @map("client_id") @db.Uuid
+  /// client id of the asset
+  asset           String    @db.Uuid
+  valueMinor      BigInt    @map("value_minor")
+  valuedOn        DateTime  @map("valued_on") @db.Date
+  clientUpdatedAt DateTime  @map("client_updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  serverVersion   BigInt    @default(dbgenerated("nextval('sync_version_seq')")) @map("server_version")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, clientId])
+  @@index([userId, serverVersion])
+  @@index([userId, asset])
+  @@map("asset_valuations")
+}
+
+model Liability {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  clientId        String    @map("client_id") @db.Uuid
+  kind            String
+  name            String
+  balanceMinor    BigInt    @map("balance_minor")
+  note            String?
+  clientUpdatedAt DateTime  @map("client_updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  serverVersion   BigInt    @default(dbgenerated("nextval('sync_version_seq')")) @map("server_version")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, clientId])
+  @@index([userId, serverVersion])
+  @@map("liabilities")
 }

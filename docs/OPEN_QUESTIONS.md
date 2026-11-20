@@ -18,12 +18,12 @@ Business facts the code must not invent. Each item names who decides and where t
 
 Mockups: docs/design/mockups.pdf (file still to be added to the repo).
 
-## Financial model (decide before phase 4)
+## Financial model (decided by default on 2026-11-20, see ADR 0003; revisit)
 
-1. **Liquid savings L.** Default: card, cash and bank deposits only; Iman, Asaxiy and other platforms count as productive assets A, not as the emergency reserve. Confirm, or should platform holdings count towards the 12-month reserve? (TZ §9)
-2. **Essential spending M.** Default: "essential" only. Should "moderate" be included? (TZ §9)
+1. **Liquid savings L.** Applied default: card, cash and bank deposits only; Iman, Asaxiy and other platforms count as productive assets A, not as the emergency reserve. Confirm, or should platform holdings count towards the 12-month reserve? (TZ §9)
+2. **Essential spending M.** Applied default: "essential" only. Should "moderate" be included? (TZ §9)
 3. **Provisional stage.** Proposed in FINANCE_MODEL §2 so beta users see a stage before 3 months of data. Approve the onboarding questions "current savings" and "average monthly spending".
-4. **Big goals G for stage 5.** Proposed: sum of goal target ÷ months to target. Approve.
+4. **Big goals G for stage 5.** Proposed: sum of goal target ÷ months to target. Until a goals screen exists, G = 0.
 5. **Four life models.** The TZ marks its four definitions as a draft; replace if another classification was meant.
 6. **Card reserve.** Default 1 000 000 so'm, user-editable; everything above it is shown as "money waiting to be invested". Confirm.
 
@@ -45,3 +45,10 @@ Mockups: docs/design/mockups.pdf (file still to be added to the repo).
 3. Can anonymised audio and text be processed by an AI provider outside Uzbekistan (for example Azure UAE North or Central India)?
 4. Is a licence needed to show investment information, model portfolios, or the AI assistant's comparisons?
 5. IMAN Invest stays out of the catalogue until cleared; users may still record their own Iman holdings.
+
+## Release decisions (2026-11-20)
+
+1. **Capitalised dividends** count as passive income P and raise the asset value automatically (ADR 0003).
+2. **Currency:** so'm only in the MVP; foreign shares are entered at their so'm value.
+3. **Local mode:** the first APK runs without a server; data is not backed up. A migration for local-mode users when the server goes live is not built yet.
+4. **Bundle id** `uz.invest.app` is a placeholder until [APP_NAME] is chosen; changing it later means a new app on Google Play.

@@ -1,5 +1,6 @@
 import { AUTO_LOCK_SECONDS, type Locale, type TokenPair } from '@invest/shared';
 import { create } from 'zustand';
+import { LOCAL_MODE } from '../config';
 import i18n, { deviceLocale } from '../i18n';
 import { hasPin } from './pin';
 import { secure } from './secure';
@@ -49,6 +50,11 @@ export const useSession = create<SessionState>((set, get) => ({
     const locale = (savedLocale as Locale | null) ?? get().locale;
     await i18n.changeLanguage(locale);
     if (!savedLocale) return set({ stage: 'welcome', locale });
+    if (LOCAL_MODE) {
+      // Phone-only mode: the PIN is the only gate.
+      needsOnboardingAfterPin = true;
+      return set({ stage: pin ? 'locked' : 'pin-setup', locale });
+    }
     if (!refresh) return set({ stage: 'login', locale });
     if (!pin) {
       // Session saved but the app closed before a PIN was set: log in again.
@@ -64,7 +70,13 @@ export const useSession = create<SessionState>((set, get) => ({
     set({ locale });
   },
 
-  goToLogin: () => set({ stage: 'login' }),
+  goToLogin() {
+    if (LOCAL_MODE) {
+      needsOnboardingAfterPin = true;
+      return set({ stage: 'pin-setup' });
+    }
+    set({ stage: 'login' });
+  },
 
   async signedIn(pair, needsOnboarding) {
     await secure.set('refreshToken', pair.refreshToken);
@@ -82,7 +94,7 @@ export const useSession = create<SessionState>((set, get) => ({
     const { resetLocalRecords } = await import('../records');
     await resetLocalRecords();
     await secure.clearSession();
-    set({ accessToken: null, stage: 'login' });
+    set({ accessToken: null, stage: LOCAL_MODE ? 'welcome' : 'login' });
   },
 
   onBackground: () => set({ backgroundedAt: Date.now() }),
